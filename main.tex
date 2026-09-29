@@ -33,13 +33,13 @@ Thank you for the detailed comments. We have rewritten the Method section and co
 The Editor's report is grouped into the four requests below.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
 \begin{reply}
-Section III now defines the correction inputs, projective measurement tests, target construction, constrained deformation, and TSDF reconstruction. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The responses below provide the remaining implementation details explicitly, including candidate selection, proxy fallback, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
+Section III now defines the correction inputs, projective measurement tests, target construction, constrained deformation, and TSDF reconstruction. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The responses below specify candidate selection, proxy fallback, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
 \end{reply}
 \par\medskip\textbf{Editor E2: controlled target ablation.}\par
 \emph{Reserved together with R1-3(a).}
 \point{Editor E3: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
-We evaluated nine sequences containing two to six loop closures, using 30 checkpoints immediately after correction and 21 checkpoints after continued fusion. Each reference reintegrates the same measurement history with the corrected poses available at that checkpoint. Mean F@25 differences from reintegration are $+1.38$ and $+1.22$ percentage points at the two checkpoint types. Across the 21 matched fusion intervals, sign agreement increases by 0.80 percentage points and support IoU by 2.79 percentage points on average. R1-3(b) reports the complete checkpoint table and the evolution of surface fidelity and volumetric agreement across successive corrections.
+The corrected TSDF supports repeated correction and fusion in nine sequences containing two to six loop closures, evaluated at 30 checkpoints immediately after correction and 21 checkpoints after continued fusion. Each reference reintegrates the same measurement history with the corrected poses available at that checkpoint. Mean F@25 differences from reintegration are $+1.38$ and $+1.22$ percentage points at the two checkpoint types. Across the 21 matched fusion intervals, sign agreement increases by 0.80 percentage points and support IoU by 2.79 percentage points on average. R1-3(b) reports the complete checkpoint table and the evolution of surface fidelity and volumetric agreement across successive corrections.
 \end{reply}
 \point{Editor E4: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
@@ -48,13 +48,13 @@ WarpVox enables deformation-based correction of an already fused TSDF without re
 \section*{Response to Reviewer 1}
 \point{R1-1: contribution and organization}{WarpVox addresses the correction of an already fused TSDF after loop closure. It uses stored keyframe range measurements and corrected poses to construct surface targets, deforms the extracted mesh through proxy-based ARAP, and reconstructs a native TSDF from the warped surface and source volume. Returning a map that can receive further observations without full historical reintegration is the main practical contribution. The reported accuracy-runtime trade-off is promising. The evaluation includes RGB-D and LiDAR, a Kimera-PGMO comparison using the same initial mesh and pre-/post-correction trajectories, and volumetric-consistency measurements beyond surface accuracy. The main concerns below relate to isolating the target formulation's benefit, repeated use, and reproducibility.}
 \begin{reply}
-We retain the TSDF-input/TSDF-output formulation and the four-stage structure. The revised Method explains how cached observations generate surface targets, how deformation propagates those targets, and how the source volume supplies the information needed to resume TSDF fusion. The additional results below address repeated use, parameter sensitivity, and the interpretation of the reported accuracy and timing.
+WarpVox updates an already fused TSDF through observation-derived deformation and source-supported reconstruction, enabling continued fusion without full historical reintegration. The revised Method explains how cached observations generate surface targets, how deformation propagates those targets, and how the source volume supplies the information needed to resume TSDF fusion. The additional results below evaluate repeated use and parameter sensitivity, and relate reconstruction accuracy to correction cost.
 \end{reply}
 \point{R1-2: Stage-3 pseudocode}{The four-stage structure is easy to follow, and the introduction clearly motivates the problem. Section III-D is harder to follow because several filtering, target-adjustment, and mesh-repair operations are described in succession. Pseudocode showing their order would help.}
 \begin{reply}
-Algorithm 1 gives the Stage-3 operations in execution order: label connected components; remove degenerate faces and control-free fragments; reject outlier controls; assign synthetic controls; construct and constrain the proxy when needed; solve ARAP; transfer displacements; and repair or remove invalid faces. Each step refers to its definition in Section III-D. A repair pass stops when it reduces neither the number of invalid faces nor the number of aspect-ratio violations, with at most three passes and 80 Jacobi steps per pass. This ordering makes the filtering, target consolidation, deformation, and repair dependencies explicit.
+Algorithm 1 gives the execution order and dependencies of Stage-3 filtering, target consolidation, deformation, and mesh repair. Each step refers to its definition in Section III-D. A repair pass stops when it reduces neither the number of invalid faces nor the number of aspect-ratio violations, with at most three passes and 80 Jacobi steps per pass.
 
-For completeness, the execution sequence is reproduced here. The input is the source triangle mesh and its measured control displacements; the output is a source/warped surface pair with shared face indices.
+The execution sequence is reproduced below. The input is the source triangle mesh and its measured control displacements; the output is a source/warped surface pair with shared face indices.
 \begin{enumerate}[nosep,leftmargin=*]
 \item Label mesh components. Remove degenerate faces and components with fewer than 100 faces that contain no measured control.
 \item Predict each measured control displacement from neighbouring controls. Apply the median--MAD rejection once. Remove small components that lose all controls; give every other unconstrained component three synthetic controls.
@@ -68,7 +68,7 @@ For completeness, the execution sequence is reproduced here. The input is the so
 \emph{Reserved.}
 \point{R1-3(b): repeated correction and fusion}{Section IV-A already describes sequential processing with fusion resumed from the corrected volume, and Section IV-D reports volumetric consistency. However, the averages do not show how discrepancies evolve over successive correction-and-fusion cycles within a sequence. For a few existing sequences with multiple loop closures, please report the difference in GT-referenced surface scores relative to full reintegration, together with the existing volumetric-consistency metrics, over successive events. Checkpoints immediately after correction and after a specified interval of additional fusion would help distinguish the two stages. The reference should use the same measurement history and corrected poses. Since distance values are reconstructed and source-derived support and weights are transferred repeatedly, this analysis would help establish whether the approximation remains stable during continued use. Exact equivalence with reintegration is not required.}
 \begin{reply}
-We evaluated continuous correction and fusion on nine Kimera-Multi sequences containing 30 loop closures. Checkpoint A is taken immediately after each correction. Checkpoint B is taken after integrating the subsequent frames up to the next loop closure, before applying that next correction. The fusion interval is therefore event-defined and varies between loop pairs. Processing ends at the final correction, yielding 30 A and 21 B checkpoints. At each checkpoint, the reference uses the same frames and the same corrected poses as WarpVox.
+The repeated-cycle experiment tests the corrected TSDF as the input to subsequent fusion and correction on nine Kimera-Multi sequences containing 30 loop closures. Checkpoint A is taken immediately after each correction. Checkpoint B is taken after integrating the subsequent frames up to the next loop closure, before applying that next correction. The fusion interval is therefore event-defined and varies between loop pairs. Processing ends at the final correction, yielding 30 A and 21 B checkpoints. At each checkpoint, the reference uses the same frames and the same corrected poses as WarpVox.
 
 Let $\Delta F=F_{\mathrm{WarpVox}}-F_{\mathrm{reint}}$, measured in percentage points. The aggregate results are:
 \begin{center}\small
@@ -84,7 +84,7 @@ The other surface metrics follow the same evaluation protocol. Mean WarpVox-minu
 
 The six-loop 12\_07 hathor sequence illustrates the distinction between surface fidelity and volumetric agreement. Its $\Delta F@25$ is $+2.50$ percentage points after the first correction and $+3.17$ after the sixth. Over these checkpoints, support IoU changes from 83.6\% to 67.3\%, and sign agreement from 92.2\% to 82.9\%. The corrected volume supports successive fusion and correction while preserving close GT-referenced surface scores; the support and sign measurements quantify its difference from full reintegration over this sequence.
 
-The reconstruction recomputes distances from the warped surface and transfers available source weights, capped at $w_{\max}=10^4$. Voxels supported by the geometric fallback receive a prior weight, not an observation count. These rules explain why the corrected volume remains fusion-ready while differing from a volume rebuilt from the full measurement history.
+The reconstruction recomputes distances from the warped surface and transfers available source weights, capped at $w_{\max}=10^4$. Voxels supported by the geometric fallback receive a prior weight, not an observation count. This combination uses the source volume's accumulated evidence and the corrected surface geometry to initialize continued fusion.
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
@@ -126,15 +126,15 @@ $\alpha_{\min}:0.05\to0$ & $-0.030$ & $[-0.54,+0.33]$ & $-0.36$\\
 $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 \end{tabular}
 \end{center}
-The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across those tested variants, mean F@25 changes range from $-0.021$ to $+0.046$ percentage points. These results show limited sensitivity within the tested ranges and identify the stricter association-reliability cutoff as the larger influence on these cases.
+The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across those tested variants, mean F@25 changes range from $-0.021$ to $+0.046$ percentage points. Mean F@25 is therefore stable over these tested Stage-3 parameter ranges; the stricter association-reliability cutoff has the larger effect on these cases.
 
-A separate Stage-2 sweep holds its upstream observations fixed and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the RGB-D default. Its default mean F@25 is 26.63\%; the largest absolute case-level change is 0.07 percentage points. The rule is active: the default rejects candidates at 23.0\% of eligible vertices, removing 5.32\% of their candidates. Changing $\kappa$ from 1.5 to 4.0 changes the affected-vertex fraction from 58.1\% to 6.8\%. Under the default, the per-case median target changes at affected vertices are 3.8--6.2\,mm. These small displacements explain the limited F@25 sensitivity at 25\,cm voxel resolution. Each sweep is compared with its own default run.
+A separate Stage-2 sweep holds its upstream observations fixed and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the RGB-D default. Its default mean F@25 is 26.63\%; the largest absolute case-level change is 0.07 percentage points. At the default, trimming rejects candidates at 23.0\% of eligible vertices, removing 5.32\% of their candidates. Changing $\kappa$ from 1.5 to 4.0 changes the affected-vertex fraction from 58.1\% to 6.8\%. Under the default, the per-case median target changes at affected vertices are 3.8--6.2\,mm. These millimetre-scale adjustments explain the stable F@25 scores at 25\,cm voxel resolution. Each sweep is compared with its own default run.
 \end{reply}
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
 \begin{reply}
 The 0.32-percentage-point value refers to the dataset means. We replace the abstract sentence with:
 \begin{quote}
-Across 39 Kimera-Multi and 12 KITTI loop-closure cases, the dataset-mean F@25 scores differ from full reintegration by $+0.05$ and $-0.32$ percentage points, respectively.
+Across 39 Kimera-Multi and 12 KITTI loop-closure cases, the dataset-mean F@25 scores differ from full reintegration by $+0.05$ and $-0.32$ percentage points, respectively, while RGB-D mean core update time decreases from 109.25 to 2.26\,s.
 \end{quote}
 The event-level differences make the variation around these means explicit:
 \begin{center}\small
@@ -145,17 +145,17 @@ KITTI, 25\,cm & 12 & $-0.32$ & $-3.03$ & $+1.80$ & 8\\
 Kimera, 10\,cm & 11 & $+0.09$ & $-4.53$ & $+2.35$ & 4\\\bottomrule
 \end{tabular}
 \end{center}
-Here $\Delta$ is the WarpVox-minus-reintegration F@25 difference for the same event. Table~\ref{tab:reply-event-deltas} lists all events underlying these summaries. The dataset-mean statement is retained together with the observed event-level deteriorations.
+Here $\Delta$ is the WarpVox-minus-reintegration F@25 difference for the same event. Table~\ref{tab:reply-event-deltas} lists all events underlying these summaries, distinguishing the dataset means from the range of individual corrections.
 \end{reply}
 \point{R1-5: citations}{The references are generally relevant to TSDF fusion, dense-map correction, and surface deformation. ARAP and QEM are appropriately attributed; the main claimed additions are the target construction and source-supported TSDF reconstruction.}
 \begin{reply}
-The revised Method retains the ARAP and QEM attributions and adds the references for the MAD scale estimate and the spokes-and-rims ARAP formulation. We identify observation-derived target construction and source-supported TSDF reconstruction as the contributions, and describe ARAP and QEM as the established tools used within the pipeline.
+The revised Method retains the ARAP and QEM attributions and adds the references for the MAD scale estimate and the spokes-and-rims ARAP formulation. Each reference accompanies the corresponding operation in the correction pipeline.
 \end{reply}
 \point{R1-6: video runtime}{The video helps illustrate map correction and continued fusion. Please clarify which processing steps are included in the displayed runtimes and how they relate to the in-memory core-update times reported in the paper.}
 \begin{reply}
 The displayed WarpVox time is the sum of the in-memory core times of Stages 1--4: association, target construction, surface deformation and repair, and TSDF reconstruction. It excludes file I/O, loading the corrected TSDF into Voxblox, display-mesh extraction, and rendering. Reintegration time includes integration of all frames up to the event with corrected poses and excludes rosbag playback.
 
-The video sequence set contains twenty 10\,cm correction events from ten continuous runs. WarpVox takes 1.751--12.400\,s per event, with a mean of 8.405\,s. Reintegration takes 21.629--308.813\,s of pure integration time, with a mean of 165.014\,s. The mean rosbag-based reintegration wall-clock time is 661.346\,s. The paper's 10\,cm timing row uses a separate 11-case subset, with the same core-time definition.
+The video sequence set contains twenty 10\,cm correction events from ten continuous runs. WarpVox takes 1.751--12.400\,s per event, with a mean of 8.405\,s. Reintegration takes 21.629--308.813\,s of pure integration time, with a mean of 165.014\,s. The paper's 10\,cm timing row uses a separate 11-case subset, with the same core-time definition.
 
 The replacement video description reads:
 \begin{quote}
@@ -179,9 +179,9 @@ WarpVox corrects an externally maintained TSDF after a back-end trajectory revis
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
-We completed ElasticFusion runs on TUM fr3/long\_office\_household and on ten Kimera-Multi sequences. ElasticFusion uses its own tracking; WarpVox and Voxblox reintegration use ORB-SLAM3 poses. We report this as a complete-system comparison. The matched Kimera-PGMO experiment separately compares surface correction under shared input geometry and trajectories.
+The ElasticFusion comparison evaluates reconstruction quality on TUM fr3/long\_office\_household and on ten Kimera-Multi sequences. ElasticFusion uses its own tracking; WarpVox and Voxblox reintegration use ORB-SLAM3 poses. This is a complete-system comparison. The matched Kimera-PGMO experiment separately compares surface correction under shared input geometry and trajectories.
 
-On TUM, ElasticFusion achieves an absolute trajectory error (ATE) RMSE of 1.80\,cm; the ORB-SLAM3 trajectory used by the TSDF methods achieves 1.01\,cm. The map reference is reconstructed from RGB-D measurements with motion-capture poses. The recorded reconstruction scores are:
+On TUM, WarpVox achieves F@2 of 72.13\% and Chamfer distance of 2.82\,cm, compared with 62.77\% and 3.69\,cm for ElasticFusion. ElasticFusion's absolute trajectory error (ATE) RMSE is 1.80\,cm; the ORB-SLAM3 trajectory used by the TSDF methods achieves 1.01\,cm. The map reference is reconstructed from RGB-D measurements with motion-capture poses. The reconstruction scores are:
 \begin{center}\small
 \begin{tabular}{lrrrr}\toprule
 Method & F@1 (\%) & F@2 (\%) & F@5 (\%) & CD (cm)\\\midrule
@@ -213,7 +213,7 @@ Voxblox reintegration & 8.18 & 24.29 & 44.13 & 1.03\\
 WarpVox & 8.16 & 23.68 & 43.18 & 1.04\\\bottomrule
 \end{tabular}
 \end{center}
-ElasticFusion's mean trajectory ATE is 115.785\,m in these runs. It applies 213 local deformations and accepts none of 3,247 global candidates. Across the ten runs, its logged local graph optimization, global candidate optimization, and surfel deformation take 3.813, 15.476, and 7.493\,s, respectively, totalling 26.782\,s. The large trajectory errors and rejected global candidates contextualize the surface scores on these sequences. Reintegration remains the representation-matched reference, and Kimera-PGMO provides the shared-input deformation comparison.
+ElasticFusion's mean trajectory ATE is 115.785\,m in these runs. It applies 213 local deformations and accepts none of 3,247 global candidates. Across the ten runs, its logged local graph optimization, global candidate optimization, and surfel deformation take 3.813, 15.476, and 7.493\,s, respectively, totalling 26.782\,s. These Kimera reconstruction scores include the effect of each system's trajectory estimation.
 
 \end{reply}
 \subsection*{General}
@@ -247,7 +247,7 @@ Active cells are the Marching-Cubes cells that emit triangles around the zero le
 
 \point{R2-A4}{What does "modality-native" mean?}
 \begin{reply}
-The term is removed. Each keyframe measurement is kept in its own sensor frame, as a depth image (RGB-D) or a spherical range image (LiDAR), and therefore stays valid after any pose correction (Sec.~III-A).
+Each keyframe measurement is kept in its own sensor frame, as a depth image (RGB-D) or a spherical range image (LiDAR), and therefore stays valid after a world-frame pose correction. Section III-A replaces ``modality-native'' with these explicit representations.
 \end{reply}
 
 \subsection*{Sec. III-B}
@@ -286,7 +286,7 @@ $m_{rj}\in\mathbb R^3$ is one sampled 3-D point in the sensor frame of keyframe 
 
 \point{R2-C1}{What do RGB-D/LIDAR "records" mean? Are these just frames? Also, why are RGB-D associated with timestamp but LIDAR with poses?}
 \begin{reply}
-They are observations, each from one keyframe (an RGB-D depth image or a LiDAR scan). Both modalities use the corrected pose of that keyframe: a LiDAR scan has its own trajectory entry, while an RGB-D keyframe time is read from $T^+$ or interpolated between the bracketing poses when they are at most three median pose intervals apart (Sec.~III-C, Table~I).
+``Records'' are observations, each from one keyframe (an RGB-D depth image or a LiDAR scan). Both modalities use the corrected pose of that keyframe: a LiDAR scan has its own trajectory entry, while an RGB-D keyframe's corrected pose is read from $T^+$ at its timestamp or interpolated between the bracketing poses when they are at most three median pose intervals apart (Sec.~III-C, Table~I).
 \end{reply}
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
@@ -296,7 +296,7 @@ For a nonempty set of observations with valid corrected poses, the trimming thre
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-It is now called an observed vertex, i.e., a vertex with at least one observation ($\mathcal O_j\neq\emptyset$); it yields one target $v_j^*$ and becomes a measured control (Secs.~III-B to III-D).
+An observed vertex has at least one retained observation ($\mathcal O_j\neq\emptyset$); it yields one target $v_j^*$ and becomes a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
 \end{reply}
 
 \subsection*{Sec. III-D}
@@ -308,7 +308,7 @@ A control is a vertex with a prescribed deformed position. Each observed source 
 
 \point{R2-D2}{What do "connected components" mean? Are these connected components of the mesh? How are they tracked?}
 \begin{reply}
-These are connected components of the triangle mesh: vertices connected through mesh edges belong to the same component. Components are recomputed for the current source mesh at each correction. Stage 3 retains no component-tracking state across correction events. Section III-D defines mesh connectivity before introducing component-wise processing.
+These are connected components of the triangle mesh: vertices connected through mesh edges belong to the same component. Components are recomputed for the current source mesh at each correction, giving labels local to that event. Section III-D defines mesh connectivity before introducing component-wise processing.
 \end{reply}
 
 \point{R2-D3}{What does "component-restricted inverse-distance predictor" do? I.e. what significance does connectivity have in predicting inverse distance?}
@@ -338,7 +338,7 @@ These are outlier controls. We replaced the term with ``outlier'' and give the t
 
 \point{R2-D6}{What is the difference between "omitted components" (due to being "supported only by rejected controls") and "Retained components without a surviving measured control"? I.e., how can components be retained without surviving "controls" if they are omitted?}
 \begin{reply}
-Omitted components are fragments (fewer than $N_{\rm f}$ faces) that were kept only because they carried controls and lost all of them in step (a). Every other component without a surviving control, including one that never had a control, is retained and receives synthetic controls (step (b)).
+Omitted components are fragments (fewer than $N_{\rm f}$ faces) that initially carried controls and lost all of them in step (a). Every other component without a surviving control, including one that never had a control, is retained and receives synthetic controls (step (b)).
 \end{reply}
 
 \point{R2-D7}{Constraints were not yet defined here, yet there are descriptions of "receiving robust motion constraints"}
@@ -374,7 +374,7 @@ p_a^{(0)}, & \text{otherwise},
 \end{cases}
 \qquad \nu(r)=\exp[-r^2/(2\sigma_a^2)].
 \]
-The fit uses up to 20 nearest measured proxy controls, excluding $a$, with at least six required for fitting. It performs four rounds of Welsch reweighting multiplied by a fixed prior favouring near, distance-preserving, and well-observed neighbours. A target with too few fitting neighbours keeps its initial value. Thus, the majority test concerns measured targets within a component; synthetic targets follow the separate interpolation rule above.
+The fit uses up to 20 nearest measured proxy controls, excluding $a$, with at least six required for fitting. It performs four rounds of Welsch reweighting multiplied by a fixed prior favouring near, distance-preserving, and well-observed neighbours. A target with too few fitting neighbours keeps its initial value.
 \end{reply}
 
 \point{R2-D12}{Eq. 8: p\_\{a\}\textasciicircum{}\{+\} and p\_b\textasciicircum{}\{+\} are not defined. Should these be p\_\{a\}\textasciicircum{}\{\textbackslash{}star\}? What is P\textasciicircum{}+? Why is it an optimization variable?}
@@ -394,7 +394,7 @@ $c^f_{bc}=\frac12\cot\vartheta^f_{bc}$, with $\vartheta^f_{bc}$ the angle opposi
 
 \point{R2-D15}{Is the proposed method using the "proxy" or the source mesh?}
 \begin{reply}
-Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. Its displacements are then transferred to the source mesh, which supplies the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10\% or more than 99\% controlled vertices, or failed ARAP precomputation. Section III-D and Algorithm 1 describe the two paths; the conditions above specify when the direct source-mesh path is used.
+Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. Its displacements are then transferred to the source mesh, which supplies the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10\% or more than 99\% controlled vertices, or failed ARAP precomputation. Section III-D and Algorithm 1 describe both paths.
 \end{reply}
 
 \point{R2-D16}{What does "topology-local" mean?}
@@ -404,7 +404,7 @@ The interpolating triangle is selected from the proxy triangles incident to the 
 
 \point{R2-D17}{What does "star(\textbackslash{}pi(j))" mean?}
 \begin{reply}
-$\operatorname{star}_P(\pi(j))$ is the set of proxy triangles incident to $\pi(j)$; since clusters never span two components, these triangles lie on the vertex's own component, and the transfer passes no motion between disconnected surfaces (Sec.~III-D (c), (f)). A vertex whose proxy vertex has no incident triangle takes the mean control displacement of its component.
+$\operatorname{star}_P(\pi(j))$ is the set of proxy triangles incident to $\pi(j)$. Since each cluster lies within one component, the transfer interpolates displacements from triangles on the vertex's own component (Sec.~III-D (c), (f)). A vertex whose proxy vertex has no incident triangle takes the mean control displacement of its component.
 \end{reply}
 
 \point{R2-D18}{How are "edge-stretch, area-change or aspect-ratio bounds" defined mathematically?}
@@ -458,7 +458,7 @@ The distance magnitude comes from the warped mesh and its sign from the oriented
 
 \point{R2-E5}{What is a "consistent source sample"?}
 \begin{reply}
-A trilinear source sample is valid when every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent when those voxels also share the same nonzero distance sign. This condition concerns the contributing voxels, so cancellation between positive and negative values in the interpolated result does not establish sign consistency. Section III-E defines the two tests before Eq.~(18).
+A trilinear source sample is valid when every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent when those voxels also share the same nonzero distance sign. Section III-E defines the two tests before Eq.~(18).
 \end{reply}
 
 \point{R2-E6}{What is the difference between w\_\{tr\}\textasciicircum{}+ and w\_\{src\}\textasciicircum{}+?}
@@ -473,12 +473,12 @@ $n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex or
 
 \point{R2-E8}{How does the algorithm determine if the closest surface feature is an open boundary?}
 \begin{reply}
-Boundary edges are edges of exactly one face. The prior is withheld when the closest point lies on such an edge or its end vertex, because there the closest-point direction is not normal to the surface (Sec.~III-E, fallback paragraph).
+Boundary edges are incident to exactly one face. The prior is withheld when the closest point lies on such an edge or its end vertex, keeping geometric fallback support away from open boundaries (Sec.~III-E, fallback paragraph).
 \end{reply}
 
 \point{R2-E9}{What does "supported voxel" mean?}
 \begin{reply}
-A voxel with positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(22)).
+A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(22)).
 \end{reply}
 
 \point{R2-E10}{What is a "fallback support"? What are "narrow samples"?}
@@ -490,7 +490,7 @@ After removing sign conflicts, a face-connected flood fill from $\mathcal N_{\rm
 
 \point{R2-E11}{What makes a source face valid or invalid?}
 \begin{reply}
-A group takes the closest source face within the face search radius $16s$ of its mean voxel centre; it is discarded if there is none or if that face or its warped copy is degenerate, so that a frame cannot be built (Sec.~III-E, Eq.~(21)).
+For each free-space group, the algorithm selects the closest source face within $16s$ of the group's mean voxel centre. The transfer is applied when a face is found and both the source face and its warped copy are nondegenerate, allowing the paired frames to be constructed. Groups that fail these conditions are discarded (Sec.~III-E, Eq.~(21)).
 \end{reply}
 
 \subsection*{Sec. III-F}
@@ -542,7 +542,7 @@ On the ten-sequence corrected-surface comparison, CD is 309.6\,cm for the input 
 
 \point{R2-IVA3}{Table II shows inconsistent relative portions between different datasets. Please discuss why some datasets incur larger time in, e.g., association, whereas other datasets incur larger time in target estimation.}
 \begin{reply}
-The stages depend on different workloads. RGB-D queries every source vertex and transforms up to 15 retained measurements per vertex, with corrected poses interpolated by timestamp where needed. LiDAR queries one vertex per occupied 0.5\,m cell and reads corrected scan poses directly. Its association also searches a $3\times3$ spherical-image window. These differences help explain the RGB-D association/target times of 0.199/0.399\,s and the KITTI values of 0.310/0.069\,s. Deformation and TSDF reconstruction depend on surface and volume size; their KITTI times are 2.457 and 1.888\,s, compared with 1.419 and 0.231\,s on Kimera-Multi at 25\,cm. The 10\,cm Kimera row averages a separate 11-case subset. The timing columns correspond to Stage 1 (Assoc.), Stage 2 (Target), Stage 3 (ARAP and Topol.), and Stage 4 (TSDF).
+The relative stage times reflect modality-specific association work and map size. RGB-D queries every source vertex and transforms up to 15 retained measurements per vertex, with corrected poses interpolated by timestamp where needed. LiDAR queries one vertex per occupied 0.5\,m cell and reads corrected scan poses directly. Its association also searches a $3\times3$ spherical-image window. These differences help explain the RGB-D association/target times of 0.199/0.399\,s and the KITTI values of 0.310/0.069\,s. Deformation and TSDF reconstruction depend on surface and volume size; their KITTI times are 2.457 and 1.888\,s, compared with 1.419 and 0.231\,s on Kimera-Multi at 25\,cm. The 10\,cm Kimera row averages a separate 11-case subset. The timing columns correspond to Stage 1 (Assoc.), Stage 2 (Target), Stage 3 (ARAP and Topol.), and Stage 4 (TSDF).
 \end{reply}
 
 \point{R2-IVA4}{Table III: What are "ten bags"?}
