@@ -1,6 +1,4 @@
-# WarpVox — Response to the Editor and Reviewers
 
-IEEE RA-L submission **26-4628** 的逐条回复初稿。
 
 主文件：[main.tex](main.tex)。它是独立 LaTeX 文档，包含正文、TikZ 示意图以及完整事件表，无外部图片或参考文献文件依赖。
 
