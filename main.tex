@@ -394,7 +394,7 @@ $c^f_{bc}=\frac12\cot\vartheta^f_{bc}$, with $\vartheta^f_{bc}$ the angle opposi
 
 \point{R2-D15}{Is the proposed method using the "proxy" or the source mesh?}
 \begin{reply}
-Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. Its displacements are then transferred to the source mesh, which supplies the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10\% or more than 99\% controlled vertices, or failed ARAP precomputation. Section III-D and Algorithm 1 describe both paths.
+Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. Its displacements are then transferred to the source mesh, which supplies the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10 controlled vertices, a controlled-vertex fraction above 99\%, or failed ARAP precomputation. Section III-D and Algorithm 1 describe the size-based choice; the conditions above additionally select the direct source-mesh path.
 \end{reply}
 
 \point{R2-D16}{What does "topology-local" mean?}
@@ -502,7 +502,7 @@ $C_{\rm def}$ is the Stage-3 cost of deformation, including proxy construction, 
 C_{\rm def}=O(A\log A)+C_{\rm P}(P),\qquad
 C_{\rm vol}=O((A+X^-+X^+)\log A),
 \]
-where $A$ counts source Marching-Cubes cells emitting triangles, $P$ is the proxy size, and $X^-,X^+$ count source and output voxel slots. $C_{\rm P}$ covers the proxy-level Welsch fitting and ARAP solve. The volume term includes construction and use of the closest-triangle search structures.
+where $A$ counts source Marching-Cubes cells emitting triangles, $P$ counts vertices in the deformation solve, and $X^-,X^+$ count source and output voxel slots. The proxy path uses its actual vertex count; the direct path uses $P=|V^-|$. $C_{\rm P}$ covers target consolidation and ARAP. The volume term includes construction and use of the closest-triangle search structures.
 \end{reply}
 
 \subsection*{Sec. IV-A}
