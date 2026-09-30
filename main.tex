@@ -234,14 +234,7 @@ The revised Method retains the ARAP and QEM attributions and adds the references
 \end{reply}
 \point{R1-6: video runtime}{The video helps illustrate map correction and continued fusion. Please clarify which processing steps are included in the displayed runtimes and how they relate to the in-memory core-update times reported in the paper.}
 \begin{reply}
-The displayed WarpVox time is the sum of the in-memory core times of Stages 1--4: association, target construction, surface deformation and repair, and TSDF reconstruction. It excludes file I/O, loading the corrected TSDF into Voxblox, display-mesh extraction, and rendering. Reintegration time includes integration of all frames up to the event with corrected poses and excludes rosbag playback.
-
-The video sequence set contains twenty 10\,cm correction events from ten continuous runs. WarpVox takes 1.751--12.400\,s per event, with a mean of 8.405\,s. Reintegration takes 21.629--308.813\,s of pure integration time, with a mean of 165.014\,s. The paper's 10\,cm timing row uses a separate 11-case subset, with the same core-time definition.
-
-The replacement video description reads:
-\begin{quote}
-The video shows continuous WarpVox mapping at 0.10\,m voxel resolution, including map fusion, loop-closure correction, and fusion resumed from the corrected volume. On-screen WarpVox runtimes are the in-memory core times of Stages 1--4. On-screen reintegration runtimes are the integration times for all frames up to the corresponding event with corrected poses. File I/O, rosbag playback, display processing, and rendering are excluded. Playback is time-compressed; map growth follows recorded timestamps.
-\end{quote}
+The WarpVox annotation indicates approximate core map-update time for Stages 1--4, using the same timing scope as the paper and excluding I/O and visualization. The ``bag t'' label in the Voxblox footage indicates elapsed time in the recorded sequence, not computation time.
 \end{reply}
 \section*{Response to Reviewer 2}
 
