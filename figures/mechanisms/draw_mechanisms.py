@@ -146,6 +146,14 @@ for i in range(57):
     y=i*7/56
     curve.append((gx+cell*(5.5+.6*math.sin((y-.5)/2)),gy+cell*y))
 line(curve,'ink',1.1)
+# Fallback is a local absence of transferred source weight, not a distance layer.
+# Mark its support condition at the orange patch; proximity alone is insufficient.
+line([(gx+5*cell,gy+2*cell),(gx+7*cell,gy+2*cell),
+      (gx+7*cell,gy+4*cell),(gx+5*cell,gy+4*cell),
+      (gx+5*cell,gy+2*cell)],'orange',.85,True)
+text(o+.20,3.02,r'$w_{\rm src}^{+}=0$',8,'left','orange')
+text(o+.20,2.69,r'$r\leq\rho$',8,'left','orange')
+line([(o+1.45,2.90),(gx+5*cell,gy+3*cell)],'orange',.7)
 text(o+2.45,4.64,r'$\mathcal{M}^+$',9)
 text(o+.88,4.64,'$-$',10)
 text(o+3.82,4.64,'$+$',10)
