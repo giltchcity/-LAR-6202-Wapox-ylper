@@ -195,24 +195,21 @@ for x in (surface_x-tau,surface_x+tau):
 dimension(surface_x,surface_x+rho,2.64,r"$\rho$",2.46)
 dimension(surface_x,surface_x+tau,2.19,r"$\tau$",2.02)
 
-# Compact query inset: arrows trace Psi, not deformation displacements.
-query_x=14.97
-text(query_x,5.91,"Source query",7.5)
-text(query_x,5.59,r"$x^-=\Psi(x)$",8)
+# State how each voxel gets its weight; avoid duplicate source-grid cartoons.
+query_x=14.85
+text(query_x,5.91,"Weight source",7.5)
 for iy,letter,color,fill in [(7,"A","blue","bluefill"),
-                             (4,"B","orange","orangefill")]:
+                             (3,"B","orange","orangefill")]:
     xx,yy=gx+7*s,gy+iy*s
     rect(xx,yy,s,s,fill,color,1.0)
     text(xx+s/2,yy+s/2,letter,6.5,bold=True)
     y=yy+s/2
-    arrow([(xx+s+.025,y),(query_x-.38,y)],color,.75)
-    # A supported patch versus an unsupported patch at the source query.
-    qfill="bluefill" if letter=="A" else "white"
-    for a in range(2):
-        for b in range(2):
-            rect(query_x-.27+a*.27,y-.27+b*.27,.27,.27,qfill,"grid",.4)
-    circle(query_x-.05,y+.04,.031,color,color,.25)
-    text(query_x,y-.43,
+    line([(xx+s+.025,y),(query_x-.97,y)],color,.65)
+    text(query_x,y+.14,"Inherit source" if letter=="A" else "Initialize from",
+         7.7,color=color)
+    text(query_x,y-.17,"weight" if letter=="A" else "surface prior",
+         7.7,color=color)
+    text(query_x,y-.51,
          r"$w_{\rm src}^{+}>0$" if letter=="A" else r"$w_{\rm src}^{+}=0$",
          7.9,color=color)
 
