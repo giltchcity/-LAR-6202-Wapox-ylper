@@ -42,11 +42,11 @@ We evaluated matched multi-keyframe pose transport on the ten ablation cases, pr
 \end{reply}
 \point{Editor E3: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
-The corrected TSDF supports repeated correction and fusion in nine sequences containing two to six loop closures, evaluated at 30 checkpoints immediately after correction and 21 checkpoints after continued fusion. Each reference reintegrates the same measurement history with the corrected poses available at that checkpoint. Mean F@25 differences from reintegration are $+1.38$ and $+1.22$ percentage points at the two checkpoint types. Across the 21 matched fusion intervals, sign agreement increases by 0.80 percentage points and support IoU by 2.79 percentage points on average. R1-3(b) reports the complete checkpoint table and the evolution of surface fidelity and volumetric agreement across successive corrections.
+The corrected TSDF supports repeated correction and fusion in nine sequences containing two to six loop closures, evaluated at 30 checkpoints immediately after correction and 21 checkpoints after continued fusion. Each reference reintegrates the same measurement history with the corrected poses available at that checkpoint. Mean F@25 differences from reintegration are $+1.38$ and $+1.22$ percentage points at the two checkpoint types. Across the 21 matched fusion intervals, sign agreement increases by 0.79 percentage points and support IoU by 2.79 percentage points on average. R1-3(b) reports the complete checkpoint table and the evolution of surface fidelity and volumetric agreement across successive corrections.
 \end{reply}
 \point{Editor E4: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
-WarpVox corrects an already fused TSDF without full reintegration. The fused surface combines multiple observations, while a trajectory revision supplies corrections to their keyframe poses. Stage 1 links these quantities through geometrically verified surface-to-keyframe associations. Stage 2 repositions the associated measurements under the corrected poses and aggregates them into surface targets. Its source-supported reconstruction combines the warped zero set with the source volume's observed support, integration weights, sign information, and free space, returning a native TSDF for continued fusion. The submitted manuscript already compares WarpVox with Kimera-PGMO under the same input mesh and pre-/post-correction trajectories (Table III): WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and reduces surface-correction core time from 8.231 to 3.515\,s. The repeated-cycle experiment demonstrates continued fusion from the corrected volume; the additional ElasticFusion experiments compare complete systems on TUM and Kimera-Multi. R2-S2 and R2-S3 explain the mechanisms and the corresponding evidence.
+The submitted manuscript already identifies observation-derived target construction and source-supported TSDF reconstruction as its contributions (Section I), distinguishes these from existing deformation-based systems (Section II), and compares surface correction with Kimera-PGMO (Table III). Kimera-PGMO and ElasticFusion both use embedded deformation graphs, so the existing comparison already covers this deformation-based approach. Under the same input mesh and pre-/post-correction trajectories, WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and reduces surface-correction core time from 8.231 to 3.515\,s. The revision makes the existing methodological distinction more explicit: verified observation associations connect corrected keyframe poses to surface targets, and reconstruction combines the warped zero set with source-derived support, integration weights, sign, and free space to return a native TSDF for continued fusion. The additional ElasticFusion comparison and repeated-cycle evaluation further substantiate reconstruction performance and continued fusion, respectively. R2-S2 and R2-S3 provide the details.
 \end{reply}
 \section*{Response to Reviewer 1}
 \point{R1-2: Stage-3 pseudocode}{The four-stage structure is easy to follow, and the introduction clearly motivates the problem. Section III-D is harder to follow because several filtering, target-adjustment, and mesh-repair operations are described in succession. Pseudocode showing their order would help.}
@@ -130,7 +130,7 @@ A: after correction & 30 & $+1.38$ & $[-1.10,+4.56]$ & 91.7 & 78.8\\
 B: after fusion & 21 & $+1.22$ & $[-1.24,+4.58]$ & 93.8 & 83.5\\\bottomrule
 \end{tabular}
 \end{center}
-Table~\ref{tab:reply-cycles} reports both F@25 scores and their paired difference at every checkpoint in sequence order. Support IoU compares positive-weight voxel sets; sign agreement measures consistency of the signed-distance fields under the evaluation mask. The A and B averages summarize different checkpoint sets. Comparing each B with its preceding A instead gives mean improvements of 0.80 percentage points in sign agreement and 2.79 percentage points in support IoU over the 21 fusion intervals; neither metric decreases in these intervals at the reported precision.
+Table~\ref{tab:reply-cycles} reports both F@25 scores and their paired difference at every checkpoint in sequence order. Support IoU compares positive-weight voxel sets; sign agreement measures consistency of the signed-distance fields under the evaluation mask. The A and B averages summarize different checkpoint sets. Comparing each B with its preceding A instead gives mean improvements of 0.79 percentage points in sign agreement and 2.79 percentage points in support IoU over the 21 fusion intervals.
 
 The other surface metrics follow the same evaluation protocol. Mean WarpVox-minus-reintegration differences at A are $+0.86$ and $+1.18$ percentage points for F@10 and F@50, and $-0.1$\,cm for Chamfer distance. At B, they are $+0.71$, $+1.02$ percentage points, and $+0.6$\,cm, respectively. Lower Chamfer distance is better. These are checkpoint-wise paired differences, averaged over the indicated checkpoint set.
 
@@ -227,11 +227,11 @@ The revised Section III makes the definitions and update rules explicit. Table I
 \end{reply}
 \point{R2-S2: Conceptual distinction from ElasticFusion}{The difference seems to be the use of triangles in place of surfels for computing the deformations.}
 \begin{reply}
-WarpVox corrects an externally maintained TSDF after a back-end trajectory revision. Fusion combines multiple observations into a shared volume. Stage 1 reconstructs the observation support of its surface through verified keyframe associations; Stage 2 repositions and aggregates the associated measurements under the corrected poses to construct deformation targets. The triangle mesh carries this surface deformation between the input and output TSDFs. Its reconstruction combines distances from the warped surface with source-derived support, sign, integration weights, and free space, preserving the volumetric state needed to resume TSDF fusion. ElasticFusion and Kimera-PGMO both use embedded deformation graphs: ElasticFusion derives constraints from local and global surface registration within its surfel SLAM system, while Kimera-PGMO propagates trajectory corrections to a timestamped mesh. The contributions are observation-guided deformation constraints and source-supported volumetric reconstruction; ARAP and QEM provide the deformation machinery. The submitted Table III already compares surface correction under the same input mesh and pre-/post-correction trajectories: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points over Kimera-PGMO with a $2.34\times$ speedup in surface correction. Stage 4 then reconstructs a native TSDF in another 1.277\,s, for 4.792\,s in total. The repeated-cycle experiment demonstrates that the resulting volume supports subsequent fusion and correction.
+The submitted contribution statements (Section I) identify observation-derived target construction and source-supported TSDF reconstruction. WarpVox corrects an externally maintained TSDF after a back-end trajectory revision. Fusion combines multiple observations into a shared volume. Stage 1 reconstructs the observation support of its surface through verified keyframe associations; Stage 2 repositions and aggregates the associated measurements under the corrected poses to construct deformation targets. The triangle mesh carries this surface deformation between the input and output TSDFs. Its reconstruction combines distances from the warped surface with source-derived support, sign, integration weights, and free space, preserving the volumetric state needed to resume TSDF fusion. ElasticFusion and Kimera-PGMO both use embedded deformation graphs: ElasticFusion derives constraints from local and global surface registration within its surfel SLAM system, while Kimera-PGMO propagates trajectory corrections to a timestamped mesh. ARAP and QEM provide WarpVox's deformation machinery. The submitted Table III already compares surface correction with this deformation-graph approach through Kimera-PGMO under the same input mesh and pre-/post-correction trajectories: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points with a $2.34\times$ speedup in surface correction. Stage 4 then reconstructs a native TSDF in another 1.277\,s, for 4.792\,s in total. The repeated-cycle experiment further demonstrates that the resulting volume supports subsequent fusion and correction.
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
-The submitted Table III already provides a controlled deformation-based comparison with Kimera-PGMO under the same initial mesh and pre-/post-correction trajectories. Kimera-PGMO and ElasticFusion both use embedded deformation graphs. We complement this controlled comparison with ElasticFusion on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. This additional comparison evaluates the complete systems: ElasticFusion uses its own tracking; WarpVox and Voxblox reintegration use ORB-SLAM3 poses.
+The submitted Table III already evaluates embedded-deformation-based correction through Kimera-PGMO under the same initial mesh and pre-/post-correction trajectories. This comparison covers the deformation-graph approach also used by ElasticFusion. The methodological distinction is already set out in Sections I--II and is elaborated in R2-S2 above. The additional ElasticFusion results below reinforce this existing comparison on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. ElasticFusion uses its own tracking; WarpVox and Voxblox reintegration use ORB-SLAM3 poses.
 
 On TUM, WarpVox achieves F@2 of 72.13\% and Chamfer distance of 2.82\,cm, compared with 62.77\% and 3.69\,cm for ElasticFusion. ElasticFusion's absolute trajectory error (ATE) RMSE is 1.80\,cm; the ORB-SLAM3 trajectory used by the TSDF methods achieves 1.01\,cm. The map reference is reconstructed from RGB-D measurements with motion-capture poses. The reconstruction scores are:
 \begin{center}\small
@@ -242,19 +242,7 @@ Voxblox reintegration & 33.23 & 68.64 & 89.04 & 2.99\\
 WarpVox & 37.61 & 72.13 & 89.53 & 2.82\\\bottomrule
 \end{tabular}
 \end{center}
-The F-score thresholds are in centimetres. WarpVox's four-stage correction takes 2.499\,s for one loop event. ElasticFusion processes the complete 2,507-frame sequence in 206.887\,s including tracking and mapping. Its measured deformation-related costs are:
-\begin{center}\small
-\begin{tabular}{p{0.64\linewidth}rr}\toprule
-ElasticFusion operation & Count & Total (s)\\\midrule
-Local-loop constraints and graph optimization (CPU) & 2 & 0.049\\
-Apply deformation to surfels (GPU, incremental cost) & 2 & 0.007\\
-Depth synthesis for local-loop deformation & 2 & 0.026\\
-Global-loop candidate optimization & 35 & 0.032\\
-Per-frame deformation-graph resampling & 2,507 & 8.796\\
-Global-loop detection: fern encoding and retrieval & 2,507 & 15.151\\\bottomrule
-\end{tabular}
-\end{center}
-The incremental GPU cost subtracts the measured 11.2\,ms per-frame cleaning cost, with GPU synchronization around timing measurements. None of the 35 global candidates is accepted.
+The F-score thresholds are in centimetres.
 
 On Kimera-Multi, maps are compared at the last evaluated loop event in each sequence:
 \begin{center}\small
@@ -265,7 +253,7 @@ Voxblox reintegration & 8.18 & 24.29 & 44.13 & 1.03\\
 WarpVox & 8.16 & 23.68 & 43.18 & 1.04\\\bottomrule
 \end{tabular}
 \end{center}
-ElasticFusion's mean trajectory ATE is 115.785\,m in these runs. It applies 213 local deformations and accepts none of 3,247 global candidates. Across the ten runs, its logged local graph optimization, global candidate optimization, and surfel deformation take 3.813, 15.476, and 7.493\,s, respectively, totalling 26.782\,s.
+ElasticFusion's mean trajectory ATE is 115.785\,m in these runs.
 
 \end{reply}
 \subsection*{General}
@@ -996,7 +984,7 @@ A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table III c
 \appendix
 \section{Successive correction and fusion checkpoints}
 \label{app:cycles}
-Each row reports the GT-referenced F@25 scores of WarpVox and full reintegration at the same checkpoint, using the same frames and corrected poses. A is recorded immediately after correction; B is recorded after continued fusion, immediately before the next correction. For example, L1$\to$L2 denotes the B checkpoint before the L2 correction. $\Delta F@25=F@25_{\mathrm{WarpVox}}-F@25_{\mathrm{reint}}$ is measured in percentage points (pp); scores and differences are reported to two decimal places.
+Each row reports the GT-referenced F@25 scores of WarpVox and full reintegration at the same checkpoint, using the same frames and corrected poses. A is recorded immediately after correction; B is recorded after continued fusion, immediately before the next correction. For example, L1$\to$L2 denotes the B checkpoint before the L2 correction. $\Delta F@25=F@25_{\mathrm{WarpVox}}-F@25_{\mathrm{reint}}$ is measured in percentage points (pp); differences are computed before rounding, and all F-scores and differences are reported to two decimal places.
 \begingroup\small
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{llcrrrrr}
