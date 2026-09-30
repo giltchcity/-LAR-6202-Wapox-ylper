@@ -34,7 +34,7 @@ Thank you for the detailed comments. We have rewritten the Method section and co
 The Editor's report is grouped into the four requests below.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
 \begin{reply}
-Section III specifies the inputs, tests, and update rules of the existing four-stage pipeline. It also explains their design basis: observation support links pose corrections to the fused surface, weighted target construction reconciles the corrected observations, ARAP propagates the constraints while penalizing local distortion, and source-supported reconstruction restores the state needed for continued fusion. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The revised Method specifies candidate selection, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
+Section III specifies the inputs, tests, and update rules of the existing four-stage pipeline. It explains how the system associates the fused surface with keyframes, combines sample positions computed using their corrected poses into surface targets, deforms the mesh with ARAP, and reconstructs the TSDF fields needed for continued fusion. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The revised Method specifies candidate selection, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
 \end{reply}
 \par\medskip\textbf{Editor E2: controlled target ablation.}\par
 \begin{reply}
@@ -233,7 +233,7 @@ WarpVox is a map-correction system that updates an externally maintained TSDF af
 \begin{reply}
 The submitted Table III already evaluates embedded-deformation-based correction through Kimera-PGMO under the same initial mesh and pre-/post-correction trajectories. This comparison covers the deformation-graph approach also used by ElasticFusion. Sections I--II already describe WarpVox's correction of an externally maintained TSDF and return to continued fusion without full reintegration; R2-S2 above details this system design. The additional ElasticFusion results below reinforce this existing comparison on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. ElasticFusion uses its own tracking; WarpVox and Voxblox reintegration use ORB-SLAM3 poses.
 
-On TUM, WarpVox achieves F@2 of 72.13\% and Chamfer distance of 2.82\,cm, compared with 62.77\% and 3.69\,cm for ElasticFusion. ElasticFusion's absolute trajectory error (ATE) RMSE is 1.80\,cm; the ORB-SLAM3 trajectory used by the TSDF methods achieves 1.01\,cm. The map reference is reconstructed from RGB-D measurements with motion-capture poses. The reconstruction scores are:
+On TUM, WarpVox achieves F@2 of 72.13\% and Chamfer distance of 2.82\,cm, compared with 62.77\% and 3.69\,cm for ElasticFusion. ElasticFusion's absolute trajectory error (ATE) RMSE is 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the \href{https://www.thomaswhelan.ie/Whelan16ijrr.pdf}{ElasticFusion paper}; the ORB-SLAM3 trajectory used by the TSDF methods achieves 1.01\,cm. The map reference is reconstructed from RGB-D measurements with motion-capture poses. The reconstruction scores are:
 \begin{center}\small
 \begin{tabular}{lrrrr}\toprule
 Method & F@1 (\%) & F@2 (\%) & F@5 (\%) & CD (cm)\\\midrule
@@ -253,7 +253,7 @@ Voxblox reintegration & 8.18 & 24.29 & 44.13 & 1.03\\
 WarpVox & 8.16 & 23.68 & 43.18 & 1.04\\\bottomrule
 \end{tabular}
 \end{center}
-ElasticFusion's mean trajectory ATE is 115.785\,m in these runs.
+ElasticFusion's mean trajectory ATE is 115.785\,m in these runs. Local deformation was active, with 213 updates, while none of the 3,247 global candidates was accepted. These runs therefore retain substantial global trajectory error despite repeated local deformation. This observation is consistent with ElasticFusion's use of global loop closure to recover from drift beyond the convergence range of local surface alignment (Sections 5--6 of the ElasticFusion paper).
 
 \end{reply}
 \subsection*{General}
