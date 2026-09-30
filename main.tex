@@ -49,10 +49,6 @@ The corrected TSDF supports repeated correction and fusion in nine sequences con
 WarpVox corrects an already fused TSDF without full reintegration. The fused surface combines multiple observations, while a trajectory revision supplies corrections to their keyframe poses. Stage 1 links these quantities through geometrically verified surface-to-keyframe associations. Stage 2 repositions the associated measurements under the corrected poses and aggregates them into surface targets. Its source-supported reconstruction combines the warped zero set with the source volume's observed support, integration weights, sign information, and free space, returning a native TSDF for continued fusion. The submitted manuscript already compares WarpVox with Kimera-PGMO under the same input mesh and pre-/post-correction trajectories (Table III): WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and reduces surface-correction core time from 8.231 to 3.515\,s. The repeated-cycle experiment demonstrates continued fusion from the corrected volume; the additional ElasticFusion experiments compare complete systems on TUM and Kimera-Multi. R2-S2 and R2-S3 explain the mechanisms and the corresponding evidence.
 \end{reply}
 \section*{Response to Reviewer 1}
-\point{R1-1: contribution and organization}{WarpVox addresses the correction of an already fused TSDF after loop closure. It uses stored keyframe range measurements and corrected poses to construct surface targets, deforms the extracted mesh through proxy-based ARAP, and reconstructs a native TSDF from the warped surface and source volume. Returning a map that can receive further observations without full historical reintegration is the main practical contribution. The reported accuracy-runtime trade-off is promising. The evaluation includes RGB-D and LiDAR, a Kimera-PGMO comparison using the same initial mesh and pre-/post-correction trajectories, and volumetric-consistency measurements beyond surface accuracy. The main concerns below relate to isolating the target formulation's benefit, repeated use, and reproducibility.}
-\begin{reply}
-The revision clarifies how verified observation associations generate deformation constraints and how source-supported reconstruction returns a native TSDF for continued fusion. The results below extend the existing evaluation with matched target construction, repeated correction-and-fusion cycles, and parameter sensitivity.
-\end{reply}
 \point{R1-2: Stage-3 pseudocode}{The four-stage structure is easy to follow, and the introduction clearly motivates the problem. Section III-D is harder to follow because several filtering, target-adjustment, and mesh-repair operations are described in succession. Pseudocode showing their order would help.}
 \begin{reply}
 Algorithm 1 gives the execution order and dependencies of Stage-3 filtering, target consolidation, deformation, and mesh repair. Each step refers to its definition in Section III-D. A repair pass stops when it reduces neither the number of invalid faces nor the number of aspect-ratio violations, with at most three passes and 80 Jacobi steps per pass.
@@ -228,10 +224,6 @@ Kimera, 10\,cm & 11 & $+0.09$ & $-4.53$ & $+2.35$ & 4\\\bottomrule
 \end{center}
 Here $\Delta$ is the WarpVox-minus-reintegration F@25 difference for the same event. Table~\ref{tab:reply-event-deltas} lists all events underlying these summaries, distinguishing the dataset means from the range of individual corrections.
 \end{reply}
-\point{R1-5: citations}{The references are generally relevant to TSDF fusion, dense-map correction, and surface deformation. ARAP and QEM are appropriately attributed; the main claimed additions are the target construction and source-supported TSDF reconstruction.}
-\begin{reply}
-The revised Method retains the ARAP and QEM attributions and adds the references for the MAD scale estimate and the spokes-and-rims ARAP formulation. Each reference accompanies the corresponding operation in the correction pipeline.
-\end{reply}
 \point{R1-6: video runtime}{The video helps illustrate map correction and continued fusion. Please clarify which processing steps are included in the displayed runtimes and how they relate to the in-memory core-update times reported in the paper.}
 \begin{reply}
 The WarpVox annotation indicates approximate core map-update time for Stages 1--4, using the same timing scope as the paper and excluding I/O and visualization. The ``bag t'' label in the Voxblox footage indicates elapsed time in the recorded sequence, not computation time.
@@ -239,10 +231,6 @@ The WarpVox annotation indicates approximate core map-update time for Stages 1--
 \section*{Response to Reviewer 2}
 
 
-\point{R2-S0: Scope of the correction}{The proposed method computes an as-rigid-as-possible (ARAP) transformation between the existing surface and the new sensor measurement.}
-\begin{reply}
-The back-end pose correction supplies the motion; the associated keyframe measurements supply the target geometry. These are the keyframe observations defined in the submitted Section III-A. Stage 1 verifies their association with the existing surface under the pre-correction poses; Stage 2 transforms the matched samples using the corrected poses. ARAP propagates these constraints across the surface, and the warped surface and source volume define the corrected TSDF.
-\end{reply}
 \point{R2-S1: Methodological clarity and reproducibility}{There are many inconsistent and vague descriptions that make it impossible for a reader to reproduce the method based on the manuscript alone.}
 \begin{reply}
 The revision spells out the algorithmic details within the original four-stage structure. The revision defines the TSDF representation and support sets, projective sampling and association weights, control selection, proxy construction, ARAP constraints, deformation repair, and the TSDF sign and weight rules. Table I collects the parameters, Algorithm 1 orders the deformation steps, and Section III-F gives the stage costs. The responses below address each requested definition.

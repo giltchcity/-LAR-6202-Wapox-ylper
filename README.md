@@ -4,7 +4,7 @@
 
 ## 当前范围
 
-- 已起草 65 条回复：Editor 4 条、Reviewer 1 8 条、Reviewer 2 53 条。
+- 已起草 62 条回复：Editor 4 条、Reviewer 1 6 条、Reviewer 2 52 条。
 - R1-3(a) 已包含 matched multi-keyframe pose-transport 的十例配对结果、Stage 1 观测关联与 Stage 2 位移构造的关系，并关联到 R1-3(c) 的完整关联门限消融；Editor 对应回复已补齐。
 - 包含连续纠正与融合的 51 个检查点、原主实验及高分辨率子集的 62 个事件、参数敏感性、ElasticFusion 对比、Chamfer distance 和计时说明。
 - 采用黑色审稿意见、蓝色作者回复。文字经过 anti-defensive-writing 审校，保留评测范围、不同系统位姿来源、时间口径和体积误差等必要限制。
@@ -19,7 +19,7 @@
 
 ## 编译与校验状态
 
-65 条回复、LaTeX 环境配对和内部交叉引用已通过源码检查。Codex 内置编译器在初始化阶段报 `Unable to find standard directories for platform`，PDF 编译及排版尚未验证。
+62 条回复、LaTeX 环境配对和内部交叉引用已通过源码检查。Codex 内置编译器在初始化阶段报 `Unable to find standard directories for platform`，PDF 编译及排版尚未验证。
 
 ## 版本协作
 
