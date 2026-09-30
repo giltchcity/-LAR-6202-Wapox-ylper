@@ -8,6 +8,7 @@
 - R1-3(a) 已包含 matched multi-keyframe pose-transport 的十例配对结果、Stage 1 观测关联与 Stage 2 位移构造的关系，并关联到 R1-3(c) 的完整关联门限消融；Editor 对应回复已补齐。
 - 包含连续纠正与融合的 51 个检查点、原主实验及高分辨率子集的 62 个事件、参数敏感性、ElasticFusion 对比、Chamfer distance 和计时说明。
 - 采用黑色审稿意见、蓝色作者回复。文字经过 anti-defensive-writing 审校，保留评测范围、不同系统位姿来源、时间口径和体积误差等必要限制。
+- Figure R1 位于 R2-G2 回复之后，采用三面板矢量示意图。[图源与导出文件](figures/mechanisms/)包含绘图脚本、TikZ、SVG 和 PNG 预览；主文件已内嵌 TikZ。
 
 这是供合作者讨论的初稿。正文里的修改描述需与最终修订论文同步。
 
@@ -15,7 +16,7 @@
 
 将本仓库导入一个独立的 Overleaf 项目，以 `main.tex` 为主文件，使用 pdfLaTeX 编译。论文正文继续保留在 [论文仓库](https://github.com/giltchcity/-LAR-6202-Wapox)，两个项目分别维护。
 
-需要的宏包均在源文件中声明：geometry、fontenc、amsmath、amssymb、booktabs、xcolor、enumitem、longtable、tikz、hyperref。
+需要的宏包均在源文件中声明：geometry、fontenc、amsmath、amssymb、booktabs、xcolor、enumitem、longtable、tikz、float、hyperref。
 
 ## 编译与校验状态
 
