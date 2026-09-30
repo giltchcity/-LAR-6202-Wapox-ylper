@@ -102,7 +102,7 @@ Mean & $+0.12$ & $+0.08$ & $+0.02$\\
 }
 
 \textbf{Reconstructing observation support and displacement constraints.}
-TSDF fusion combines range observations from multiple frames into a shared volume. WarpVox uses keyframe measurements to reconstruct the observation support of its fused surface: Stage 1 projects each source vertex into candidate keyframes under the pre-correction poses and retains geometrically consistent measurements. Stage 2 repositions these measurements under the corrected poses and aggregates them into surface targets. Together, these stages connect the fused map to the keyframe poses updated by the back end.
+TSDF fusion combines posed range observations from multiple frames into a shared distance field. WarpVox follows this construction in reverse at the level of observation support: starting from the fused surface, Stage 1 projects each source vertex into candidate keyframes under the pre-correction poses and retains geometrically consistent measurements. Stage 2 then repositions these measurements under the corrected poses and aggregates them into surface targets. This reconstructs the link between the fused surface and its supporting observations, allowing the corrected keyframe poses to drive surface deformation.
 
 The matched comparison retains this observation support and tests two ways of constructing candidate target coordinates in Stage 2. Writing the source vertex in the pre-correction keyframe coordinates as $\hat v_{rj}^-$, the two candidates are
 \[
