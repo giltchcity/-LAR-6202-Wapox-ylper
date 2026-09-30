@@ -34,7 +34,7 @@ Thank you for the detailed comments. We have rewritten the Method section and co
 The Editor's report is grouped into the four requests below.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
 \begin{reply}
-Section III specifies the inputs, tests, and update rules of the existing four-stage pipeline. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The responses below specify candidate selection, proxy fallback, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
+Section III specifies the inputs, tests, and update rules of the existing four-stage pipeline. It also explains their design basis: observation support links pose corrections to the fused surface, weighted target construction reconciles the corrected observations, ARAP propagates the constraints while penalizing local distortion, and source-supported reconstruction restores the state needed for continued fusion. The parameter table specifies the fixed and modality-dependent settings, and Algorithm 1 gives the execution order of Stage 3. The responses below specify candidate selection, proxy fallback, open-boundary handling, and mesh-repair stopping rules. Figure~\ref{fig:reply-mechanisms} illustrates association, component-aware clustering, and output support classes. The sensitivity results in R1-3(c) quantify the effects of the rejection thresholds.
 \end{reply}
 \par\medskip\textbf{Editor E2: controlled target ablation.}\par
 \begin{reply}
@@ -46,7 +46,7 @@ The corrected TSDF supports repeated correction and fusion in nine sequences con
 \end{reply}
 \point{Editor E4: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
-WarpVox corrects an already fused TSDF without full reintegration. Stage 1 reconstructs the observation support of the fused surface through geometrically verified surface-to-keyframe associations. Stage 2 repositions the associated measurements under the corrected poses and aggregates them into surface targets. Its source-supported reconstruction combines the warped zero set with the source volume's observed support, integration weights, sign information, and free space, returning a native TSDF for continued fusion. The submitted manuscript already compares WarpVox with Kimera-PGMO under the same input mesh and pre-/post-correction trajectories (Table III): WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and reduces surface-correction core time from 8.231 to 3.515\,s. The repeated-cycle experiment demonstrates continued fusion from the corrected volume; the additional ElasticFusion experiments compare complete systems on TUM and Kimera-Multi. R2-S2 and R2-S3 explain the mechanisms and the corresponding evidence.
+WarpVox corrects an already fused TSDF without full reintegration. The fused surface combines multiple observations, while a trajectory revision supplies corrections to their keyframe poses. Stage 1 links these quantities through geometrically verified surface-to-keyframe associations. Stage 2 repositions the associated measurements under the corrected poses and aggregates them into surface targets. Its source-supported reconstruction combines the warped zero set with the source volume's observed support, integration weights, sign information, and free space, returning a native TSDF for continued fusion. The submitted manuscript already compares WarpVox with Kimera-PGMO under the same input mesh and pre-/post-correction trajectories (Table III): WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and reduces surface-correction core time from 8.231 to 3.515\,s. The repeated-cycle experiment demonstrates continued fusion from the corrected volume; the additional ElasticFusion experiments compare complete systems on TUM and Kimera-Multi. R2-S2 and R2-S3 explain the mechanisms and the corresponding evidence.
 \end{reply}
 \section*{Response to Reviewer 1}
 \point{R1-1: contribution and organization}{WarpVox addresses the correction of an already fused TSDF after loop closure. It uses stored keyframe range measurements and corrected poses to construct surface targets, deforms the extracted mesh through proxy-based ARAP, and reconstructs a native TSDF from the warped surface and source volume. Returning a map that can receive further observations without full historical reintegration is the main practical contribution. The reported accuracy-runtime trade-off is promising. The evaluation includes RGB-D and LiDAR, a Kimera-PGMO comparison using the same initial mesh and pre-/post-correction trajectories, and volumetric-consistency measurements beyond surface accuracy. The main concerns below relate to isolating the target formulation's benefit, repeated use, and reproducibility.}
@@ -102,7 +102,18 @@ Mean & $+0.12$ & $+0.08$ & $+0.02$\\
 }
 
 \textbf{Reconstructing observation support and displacement constraints.}
-TSDF fusion combines posed range observations from multiple frames into a shared distance field. WarpVox follows this construction in reverse at the level of observation support: starting from the fused surface, Stage 1 projects each source vertex into candidate keyframes under the pre-correction poses and retains geometrically consistent measurements. Stage 2 then repositions these measurements under the corrected poses and aggregates them into surface targets. This reconstructs the link between the fused surface and its supporting observations, allowing the corrected keyframe poses to drive surface deformation.
+TSDF fusion combines posed range observations from multiple frames into a shared distance field through weighted integration (\href{https://arxiv.org/html/1611.03631#S4}{Voxblox, Sec.~IV}). WarpVox follows this construction in reverse at the level of observation support: starting from the fused surface, Stage 1 projects each source vertex into candidate keyframes under the pre-correction poses and retains geometrically consistent measurements. Stage 2 then repositions these measurements under the corrected poses and aggregates them into surface targets. The old poses establish which observations support the existing geometry; the corrected poses determine where those observations move.
+
+The measured-sample construction retains each observation's sensor-frame geometry. For the retained set $I_j$ with nonnegative weights and positive total weight, the target is the unique weighted least-squares solution:
+\[
+\begin{aligned}
+v_j^*&=\operatorname*{argmin}_{x\in\mathbb R^3} E_j(x)
+=\frac{\sum_{r\in I_j}\omega_{rj}q_{rj}^{\mathrm{meas}}}{\sum_{r\in I_j}\omega_{rj}},\\
+E_j(x)&=\sum_{r\in I_j}\omega_{rj}\|x-q_{rj}^{\mathrm{meas}}\|^2.
+\end{aligned}
+\]
+Indeed, $E_j(x)-E_j(v_j^*)=(\sum_{r\in I_j}\omega_{rj})\|x-v_j^*\|^2$.
+In a local plane-distance model with common unit normal $n$, the weighted field of these samples is $D_j(x)=n^\top(x-v_j^*)$, so $D_j(v_j^*)=0$. This connects the target to the fused zero plane of the retained observations in that model. Section III-C now states this construction and its relation to distance fusion.
 
 The matched comparison retains this observation support and tests two ways of constructing candidate target coordinates in Stage 2. Writing the source vertex in the pre-correction keyframe coordinates as $\hat v_{rj}^-$, the two candidates are
 \[
@@ -113,7 +124,7 @@ q_{rj}^{\mathrm{meas}}-q_{rj}^{\mathrm{pose}}
 &=\widehat R_r^+(m_{rj}-\hat v_{rj}^-).
 \end{aligned}
 \]
-Here $m_{rj}$ is the associated sensor-frame measurement and $(\widehat R_r^+,\widehat t_r^+)$ is its corrected keyframe pose. Stage 1 bounds $\|m_{rj}-\hat v_{rj}^-\|$ through its association gate. Both constructions apply the same keyframe pose corrections through the reconstructed observation support; their candidate coordinates differ by the rotated association residual. The close F@25 and F@50 scores are consistent with this bounded difference. Using measured samples places each candidate at the corrected world position of its associated observation.
+Here $m_{rj}$ is the associated sensor-frame measurement and $(\widehat R_r^+,\widehat t_r^+)$ is its corrected keyframe pose. Stage 1 bounds $\|m_{rj}-\hat v_{rj}^-\|$ through its association gate. Both constructions apply the same keyframe pose corrections through the reconstructed observation support; their candidate coordinates differ by the rotated association residual. The close F@25 and F@50 scores are consistent with this bounded difference.
 
 \textbf{Direct ablation of observation association.}
 The Stage-1 ablation in R1-3(c), Table~\ref{tab:reply-association-gates}, tests the role of observation screening. Removing all association gates reduces mean F@25 from 26.75\% to 25.64\%. This experiment directly evaluates the geometric verification that establishes the observation support shared by both Stage-2 constructions.
@@ -139,7 +150,7 @@ The other surface metrics follow the same evaluation protocol. Mean WarpVox-minu
 
 The six-loop 12\_07 hathor sequence illustrates the distinction between surface fidelity and volumetric agreement. Its $\Delta F@25$ is $+2.50$ percentage points after the first correction and $+3.17$ after the sixth. Over these checkpoints, support IoU changes from 83.6\% to 67.3\%, and sign agreement from 92.2\% to 82.9\%. WarpVox maintains higher F@25 than reintegration at all six post-correction checkpoints; the support and sign measurements describe the accompanying volumetric agreement.
 
-The reconstruction recomputes distances from the warped surface and transfers available source weights, capped at $w_{\max}=10^4$. Voxels supported by the geometric fallback receive a geometric prior weight for continued fusion. This combination uses the source volume's accumulated evidence and the corrected surface geometry to initialize continued fusion.
+The reconstruction recomputes distances from the warped surface and transfers available source weights, capped at $w_{\max}=10^4$. Voxels supported by the geometric fallback receive a geometric prior weight for continued fusion. Subsequent observations update these distance--weight pairs by the same TSDF integration rule, given in R2-E3. This retains the source volume's accumulated evidence while incorporating new measurements into the corrected geometry.
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
@@ -237,7 +248,7 @@ The video shows continuous WarpVox mapping at 0.10\,m voxel resolution, includin
 
 \point{R2-S0: Scope of the correction}{The proposed method computes an as-rigid-as-possible (ARAP) transformation between the existing surface and the new sensor measurement.}
 \begin{reply}
-ARAP deforms the existing surface toward targets generated by the corrected keyframe poses. The measurements are the keyframe observations defined in the submitted Section III-A. Stage 1 verifies their association with the surface under the pre-correction poses; Stage 2 transforms the matched samples using the corrected poses. The warped surface and source volume then define the corrected TSDF.
+The back-end pose correction supplies the motion; the associated keyframe measurements supply the target geometry. These are the keyframe observations defined in the submitted Section III-A. Stage 1 verifies their association with the existing surface under the pre-correction poses; Stage 2 transforms the matched samples using the corrected poses. ARAP propagates these constraints across the surface, and the warped surface and source volume define the corrected TSDF.
 \end{reply}
 \point{R2-S1: Methodological clarity and reproducibility}{There are many inconsistent and vague descriptions that make it impossible for a reader to reproduce the method based on the manuscript alone.}
 \begin{reply}
@@ -339,7 +350,7 @@ Section III-B now defines the association reliability as
 \alpha_{rj}=\frac{|\cos\phi_{rj}|}{1+z^-_{rj}/z_0}
 \exp(-\delta_{rj}/\sigma_g)\exp(-|z^m_{rj}-z^-_{rj}|/\sigma_z).
 \]
-Here $\delta_{rj}=\|m_{rj}-\hat v_{rj}^-\|$ is the distance between the sampled point and the projected source vertex in the sensor frame. The quantities $z^-_{rj}$ and $z^m_{rj}$ are their depths (RGB-D) or ranges (LiDAR), and $\phi_{rj}$ is the angle between the source normal and the viewing ray. The factors encode incidence angle, range, and measurement discrepancy; the last exponential applies to RGB-D only. The gate is $\delta_{rj}\leq g_0+g_1z^-_{rj}$; LiDAR also requires $|z^m_{rj}-z^-_{rj}|$ to meet the same bound. R1-3(c) lists the modality-specific constants and the subsequent target weights $\omega_{rj}$.
+Here $\delta_{rj}=\|m_{rj}-\hat v_{rj}^-\|$ is the distance between the sampled point and the projected source vertex in the sensor frame. The quantities $z^-_{rj}$ and $z^m_{rj}$ are their depths (RGB-D) or ranges (LiDAR), and $\phi_{rj}$ is the angle between the source normal and the viewing ray. The factors favour frontal, nearby observations that agree with the source geometry; the last exponential applies to RGB-D only. The gate is $\delta_{rj}\leq g_0+g_1z^-_{rj}$; LiDAR also requires $|z^m_{rj}-z^-_{rj}|$ to meet the same bound. R1-3(c) lists the modality-specific constants and the subsequent target weights $\omega_{rj}$.
 \end{reply}
 
 \point{R2-B4}{What are the criteria for retaining a candidate? Can multiple candidates be retained? What if none are retained?}
@@ -444,12 +455,12 @@ p_a^{(0)}, & \text{otherwise},
 \end{cases}
 \qquad \nu(r)=\exp[-r^2/(2\sigma_a^2)].
 \]
-The fit uses up to 20 nearest measured proxy controls, excluding $a$, with at least six required for fitting. It performs four rounds of Welsch reweighting multiplied by a fixed prior favouring near, distance-preserving, and well-observed neighbours. A target with too few fitting neighbours keeps its initial value.
+The fit uses up to 20 nearest measured proxy controls, excluding $a$, with at least six required for fitting. It performs four rounds of Welsch reweighting multiplied by a fixed prior favouring near, distance-preserving, and well-observed neighbours. At fixed scale, the influence $r\nu(r)$ tends to zero for large residuals, giving geometrically consistent neighbours greater influence on the rigid fit. A target with too few fitting neighbours keeps its initial value.
 \end{reply}
 
 \point{R2-D12}{Eq. 8: p\_\{a\}\textasciicircum{}\{+\} and p\_b\textasciicircum{}\{+\} are not defined. Should these be p\_\{a\}\textasciicircum{}\{\textbackslash{}star\}? What is P\textasciicircum{}+? Why is it an optimization variable?}
 \begin{reply}
-$P^+=\{p_a^+\}$ are the deformed proxy positions: controlled ones are fixed to $p_a^*$, and the others are the unknowns of Eq.~(12), now written in the spokes-and-rims form that libigl solves (step (e)).
+$P^+=\{p_a^+\}$ are the deformed proxy positions: controlled ones are fixed to $p_a^*$, and the others are the unknowns of Eq.~(12), now written in the spokes-and-rims form that libigl solves (step (e)). ARAP propagates the prescribed corrections while penalizing local shape distortion: under a common rigid motion $p_a^+=Rp_a^-+t$, choosing every local rotation as $R$ makes each edge residual zero.
 \end{reply}
 
 \point{R2-D13}{What does "proxy one-ring" mean?}
@@ -464,12 +475,12 @@ $c^f_{bc}=\frac12\cot\vartheta^f_{bc}$, with $\vartheta^f_{bc}$ the angle opposi
 
 \point{R2-D15}{Is the proposed method using the "proxy" or the source mesh?}
 \begin{reply}
-Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. Its displacements are then transferred to the source mesh, which supplies the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10 controlled vertices, a controlled-vertex fraction above 99\%, or failed ARAP precomputation.
+Meshes with more than $1.3P_{\max}$ vertices use a coarse proxy for the ARAP solve, with $P_{\max}=60{,}000$. This reduces the number of deformation unknowns; QEM places proxy vertices according to squared distances to the source face planes. The proxy displacements are then added to the original source vertices, which supply the output surface. Smaller meshes are solved directly. The implementation also falls back to the source mesh when proxy construction yields fewer than 100 vertices or faces, fewer than 10 controlled vertices, a controlled-vertex fraction above 99\%, or failed ARAP precomputation.
 \end{reply}
 
 \point{R2-D16}{What does "topology-local" mean?}
 \begin{reply}
-The interpolating triangle is selected from the proxy triangles incident to the vertex's own proxy vertex $\pi(j)$. Mesh connectivity defines this search neighbourhood (Sec.~III-D (f), Eq.~(13)).
+The interpolating triangle is selected from the proxy triangles incident to the vertex's own proxy vertex $\pi(j)$, keeping motion transfer on the same connected surface. Its nonnegative, unit-sum barycentric weights interpolate the displacements and reproduce constant translations exactly (Sec.~III-D (f), Eq.~(13)).
 \end{reply}
 
 \point{R2-D17}{What does "star(\textbackslash{}pi(j))" mean?}
@@ -514,7 +525,11 @@ The source-field orientation is available when the source sample at the pulled-b
 
 \point{R2-E3}{What does "weight provides support" mean?}
 \begin{reply}
-A positive source weight records observed support. When the trilinear source sample is valid, Eq.~(18) transfers its interpolated weight. Otherwise, it takes the weight of the containing source voxel. In both cases, the corrected distance magnitude is computed from the warped surface. The source weight and reconstructed distance therefore carry distinct information in the corrected voxel.
+A positive source weight records observed support and sets the influence of subsequent measurements. Before truncation, integrating a new signed-distance measurement $d$ with weight $\omega$ gives
+\[
+\Phi_{\rm next}=\Phi^+ + \frac{\omega}{w^++\omega}(d-\Phi^+).
+\]
+Thus, $w^+$ determines how strongly new evidence changes the corrected field. When the trilinear source sample is valid, Eq.~(18) transfers its interpolated weight. Otherwise, it takes the weight of the containing source voxel. In both cases, the corrected distance magnitude is recomputed from the warped surface. The corrected voxel therefore combines the new geometry with source-derived integration strength.
 \end{reply}
 
 \point{R2-E4}{What is the fallback branch?}
@@ -523,7 +538,7 @@ The fallback handles voxels with no transferred source weight within $\rho=1.5s$
 \[
 w_{\rm fb}(x)=\min\{1,\max\{0,(\rho-r(x))/s\}\}.
 \]
-The distance magnitude comes from the warped mesh and its sign from the oriented warped face. This weight is a geometric prior for continued fusion. The prior is withheld at open boundaries, as detailed in R2-E8. Equation (20) and the fallback paragraph state these conditions explicitly.
+The distance magnitude comes from the warped mesh and its sign from the oriented warped face. The weight, bounded by one and decreasing away from the surface, initializes geometric support that subsequent observations can refine through the fusion rule in R2-E3. The prior is withheld at open boundaries, as detailed in R2-E8. Equation (20) and the fallback paragraph state these conditions explicitly.
 \end{reply}
 
 \point{R2-E5}{What is a "consistent source sample"?}
@@ -555,12 +570,17 @@ A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set
 \begin{reply}
 Fallback support is $\Omega_{\rm fb}=\{x:w_{\rm fb}(x)>0\}$. The former phrase ``narrow samples'' refers to the narrow set $\mathcal N_{\rm tr}$ of voxels with positive transferred source weight and distance $r(x)\le\rho$ from the warped surface. The extended set $\mathcal E$ covers $\rho<r(x)\le\tau$: a voxel with a valid trilinear source sample is retained there only when the source-field central difference $g_f$ fixes its sign; a weight-only voxel uses the warped-face sign.
 
-After removing sign conflicts, a face-connected flood fill from $\mathcal N_{\rm tr}\cup\Omega_{\rm fb}$ removes disconnected extended voxels. The retained narrow and extended voxels form $\Omega_{\rm tr}$. Transported free space is inserted last into zero-weight output voxels, with insertions next to retained negative voxels rejected. Figure~\ref{fig:reply-mechanisms}(c) and Section III-E distinguish these sets and their roles.
+After removing sign conflicts, a face-connected flood fill from $\mathcal N_{\rm tr}\cup\Omega_{\rm fb}$ removes disconnected extended voxels. The retained narrow and extended voxels form $\Omega_{\rm tr}$. Transported free space is inserted last into zero-weight output voxels, with insertions in the 26-neighbourhood of retained negative voxels rejected. Any two corners of a Marching-Cubes cell are 26-neighbours, so these positive insertions cannot enable a new sign-crossing cell. Free-space transport retains observed free regions beyond the reconstructed surface band. Figure~\ref{fig:reply-mechanisms}(c) and Section III-E distinguish these sets and their roles.
 \end{reply}
 
 \point{R2-E11}{What makes a source face valid or invalid?}
 \begin{reply}
-For each free-space group, the algorithm selects the closest source face within $16s$ of the group's mean voxel centre. The transfer is applied when a face is found and both the source face and its warped copy are nondegenerate, allowing the paired frames to be constructed. Groups that fail these conditions are discarded (Sec.~III-E, Eq.~(21)).
+For each free-space group, the algorithm selects the closest source face within $16s$ of the group's mean voxel centre. The transfer is applied when a face is found and both the source face and its warped copy are nondegenerate, allowing the paired orthonormal frames $R^-,R^+$ to be constructed. For corresponding face points $q^-,q^+$, the forward map is
+\[
+\Gamma(y)=q^++R^+(R^-)^\top(y-q^-),\qquad
+\|\Gamma(y)-q^+\|=\|y-q^-\|.
+\]
+It preserves each source voxel's offset magnitude relative to the paired face. Under a common rigid correction $(R,t)$, $q^+=Rq^-+t$ and $R^+=RR^-$, so $\Gamma(y)=Ry+t$ exactly. The surface-local pullback in Eq.~(16) uses the inverse frame rotation. Groups without valid paired faces are discarded (Sec.~III-E, Eq.~(21)).
 \end{reply}
 
 \subsection*{Sec. III-F}
