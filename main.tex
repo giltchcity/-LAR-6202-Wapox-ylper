@@ -130,7 +130,7 @@ A: after correction & 30 & $+1.38$ & $[-1.10,+4.56]$ & 91.7 & 78.8\\
 B: after fusion & 21 & $+1.22$ & $[-1.24,+4.58]$ & 93.8 & 83.5\\\bottomrule
 \end{tabular}
 \end{center}
-Table~\ref{tab:reply-cycles} reports every checkpoint in sequence order. Support IoU compares positive-weight voxel sets; sign agreement measures consistency of the signed-distance fields under the evaluation mask. The A and B averages summarize different checkpoint sets. Comparing each B with its preceding A instead gives mean improvements of 0.80 percentage points in sign agreement and 2.79 percentage points in support IoU over the 21 fusion intervals; neither metric decreases in these intervals at the reported precision.
+Table~\ref{tab:reply-cycles} reports both F@25 scores and their paired difference at every checkpoint in sequence order. Support IoU compares positive-weight voxel sets; sign agreement measures consistency of the signed-distance fields under the evaluation mask. The A and B averages summarize different checkpoint sets. Comparing each B with its preceding A instead gives mean improvements of 0.80 percentage points in sign agreement and 2.79 percentage points in support IoU over the 21 fusion intervals; neither metric decreases in these intervals at the reported precision.
 
 The other surface metrics follow the same evaluation protocol. Mean WarpVox-minus-reintegration differences at A are $+0.86$ and $+1.18$ percentage points for F@10 and F@50, and $-0.1$\,cm for Chamfer distance. At B, they are $+0.71$, $+1.02$ percentage points, and $+0.6$\,cm, respectively. Lower Chamfer distance is better. These are checkpoint-wise paired differences, averaged over the indicated checkpoint set.
 
@@ -996,66 +996,72 @@ A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table III c
 \appendix
 \section{Successive correction and fusion checkpoints}
 \label{app:cycles}
-Each row compares WarpVox with reintegration using the same history and corrected poses. A denotes the state immediately after a loop correction; B denotes continued fusion from that correction up to the next loop event. F-score differences are in percentage points; sign agreement and support IoU are percentages.
+Each row reports the GT-referenced F@25 scores of WarpVox and full reintegration at the same checkpoint, using the same frames and corrected poses. A is recorded immediately after correction; B is recorded after continued fusion, immediately before the next correction. For example, L1$\to$L2 denotes the B checkpoint before the L2 correction. $\Delta F@25=F@25_{\mathrm{WarpVox}}-F@25_{\mathrm{reint}}$ is measured in percentage points (pp); scores and differences are reported to two decimal places.
 \begingroup\small
-\setlength{\tabcolsep}{4pt}
-\begin{longtable}{llcrrr}
-\caption{Event-level surface differences and volumetric agreement.}\label{tab:reply-cycles}\\
-\toprule Sequence & Event & State & $\Delta F@25$ & Sign & Support IoU\\\midrule\endfirsthead
-\toprule Sequence & Event & State & $\Delta F@25$ & Sign & Support IoU\\\midrule\endhead
-\midrule\multicolumn{6}{r}{Continued on next page}\\\endfoot
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{llcrrrrr}
+\caption{Checkpoint-wise F-scores and volumetric agreement.}\label{tab:reply-cycles}\\
+\toprule
+Sequence & Event & State & \multicolumn{2}{c}{$F@25$ (\%)} & $\Delta F@25$ & Sign & Support IoU\\
+\cmidrule(lr){4-5}
+& & & WarpVox & Reint. & (pp) & (\%) & (\%)\\\midrule\endfirsthead
+\toprule
+Sequence & Event & State & \multicolumn{2}{c}{$F@25$ (\%)} & $\Delta F@25$ & Sign & Support IoU\\
+\cmidrule(lr){4-5}
+& & & WarpVox & Reint. & (pp) & (\%) & (\%)\\\midrule\endhead
+\midrule\multicolumn{8}{r}{Continued on next page}\\\endfoot
 \bottomrule\endlastfoot
-12\_07 acl\_jackal & L1 & A & +0.36 & 97.3 & 88.9 \\
-12\_07 acl\_jackal & L1$\to$L2 & B & +0.32 & 97.4 & 89.5 \\
-12\_07 acl\_jackal & L2 & A & +2.63 & 89.6 & 76.7 \\
-12\_07 acl\_jackal & L2$\to$L3 & B & +2.37 & 89.9 & 76.9 \\
-12\_07 acl\_jackal & L3 & A & +3.54 & 88.9 & 72.7 \\
-12\_07 acl\_jackal2 & L1 & A & +1.02 & 98.3 & 90.1 \\
-12\_07 acl\_jackal2 & L1$\to$L2 & B & -0.03 & 99.5 & 97.8 \\
-12\_07 acl\_jackal2 & L2 & A & +0.61 & 96.0 & 84.3 \\
-12\_07 acl\_jackal2 & L2$\to$L3 & B & +0.23 & 98.4 & 94.4 \\
-12\_07 acl\_jackal2 & L3 & A & -0.74 & 84.6 & 75.6 \\
-12\_07 apis & L1 & A & -0.32 & 98.1 & 90.8 \\
-12\_07 apis & L1$\to$L2 & B & -0.31 & 98.4 & 92.3 \\
-12\_07 apis & L2 & A & -0.11 & 95.2 & 79.3 \\
-12\_07 apis & L2$\to$L3 & B & -0.17 & 95.2 & 79.3 \\
-12\_07 apis & L3 & A & -0.19 & 94.1 & 75.7 \\
-12\_07 apis & L3$\to$L4 & B & -0.44 & 94.5 & 77.4 \\
-12\_07 apis & L4 & A & -1.10 & 93.0 & 74.7 \\
-12\_07 apis & L4$\to$L5 & B & -1.24 & 93.7 & 77.1 \\
-12\_07 apis & L5 & A & +1.34 & 90.5 & 73.0 \\
-12\_07 hathor & L1 & A & +2.50 & 92.2 & 83.6 \\
-12\_07 hathor & L1$\to$L2 & B & +2.40 & 92.7 & 84.8 \\
-12\_07 hathor & L2 & A & +3.19 & 90.6 & 78.7 \\
-12\_07 hathor & L2$\to$L3 & B & +3.18 & 90.7 & 79.0 \\
-12\_07 hathor & L3 & A & +3.10 & 90.1 & 76.8 \\
-12\_07 hathor & L3$\to$L4 & B & +3.18 & 91.1 & 79.5 \\
-12\_07 hathor & L4 & A & +4.56 & 88.0 & 73.9 \\
-12\_07 hathor & L4$\to$L5 & B & +4.58 & 88.1 & 74.1 \\
-12\_07 hathor & L5 & A & +4.23 & 86.4 & 70.0 \\
-12\_07 hathor & L5$\to$L6 & B & +3.66 & 88.8 & 75.1 \\
-12\_07 hathor & L6 & A & +3.17 & 82.9 & 67.3 \\
-12\_07 sobek & L1 & A & +1.29 & 93.5 & 84.9 \\
-12\_07 sobek & L1$\to$L2 & B & +1.39 & 93.5 & 85.0 \\
-12\_07 sobek & L2 & A & -0.76 & 92.0 & 78.7 \\
-12\_07 sobek & L2$\to$L3 & B & -0.41 & 92.7 & 80.8 \\
-12\_07 sobek & L3 & A & +3.76 & 88.7 & 74.9 \\
-12\_07 sobek & L3$\to$L4 & B & +3.95 & 89.3 & 76.9 \\
-12\_07 sobek & L4 & A & +3.74 & 86.9 & 73.1 \\
-12\_07 sobek & L4$\to$L5 & B & +3.74 & 87.1 & 73.3 \\
-12\_07 sobek & L5 & A & +2.26 & 85.5 & 70.1 \\
-12\_07 sparkal1 & L1 & A & -0.04 & 95.1 & 84.3 \\
-12\_07 sparkal1 & L1$\to$L2 & B & -0.39 & 96.7 & 89.4 \\
-12\_07 sparkal1 & L2 & A & +1.95 & 88.4 & 76.0 \\
-12\_07 thoth & L1 & A & -0.30 & 95.0 & 82.8 \\
-12\_07 thoth & L1$\to$L2 & B & -0.05 & 96.9 & 89.3 \\
-12\_07 thoth & L2 & A & +0.82 & 88.7 & 71.7 \\
-12\_08 acl\_jackal2 & L1 & A & +0.33 & 96.6 & 85.3 \\
-12\_08 acl\_jackal2 & L1$\to$L2 & B & -0.39 & 98.0 & 90.9 \\
-12\_08 acl\_jackal2 & L2 & A & +0.76 & 95.0 & 82.0 \\
-12\_08 apis & L1 & A & -0.15 & 96.1 & 86.5 \\
-12\_08 apis & L1$\to$L2 & B & -0.02 & 97.0 & 89.7 \\
-12\_08 apis & L2 & A & -0.10 & 93.5 & 80.7 \\
+12\_07 acl\_jackal & L1 & A & 27.20 & 26.84 & +0.36 & 97.3 & 88.9 \\
+12\_07 acl\_jackal & L1$\to$L2 & B & 26.58 & 26.26 & +0.32 & 97.4 & 89.5 \\
+12\_07 acl\_jackal & L2 & A & 42.07 & 39.43 & +2.63 & 89.6 & 76.7 \\
+12\_07 acl\_jackal & L2$\to$L3 & B & 41.82 & 39.45 & +2.37 & 89.9 & 76.9 \\
+12\_07 acl\_jackal & L3 & A & 40.55 & 37.01 & +3.54 & 88.9 & 72.7 \\
+12\_07 acl\_jackal2 & L1 & A & 67.54 & 66.52 & +1.02 & 98.3 & 90.1 \\
+12\_07 acl\_jackal2 & L1$\to$L2 & B & 43.83 & 43.86 & -0.03 & 99.5 & 97.8 \\
+12\_07 acl\_jackal2 & L2 & A & 64.37 & 63.76 & +0.61 & 96.0 & 84.3 \\
+12\_07 acl\_jackal2 & L2$\to$L3 & B & 40.25 & 40.01 & +0.23 & 98.4 & 94.4 \\
+12\_07 acl\_jackal2 & L3 & A & 52.03 & 52.77 & -0.74 & 84.6 & 75.6 \\
+12\_07 apis & L1 & A & 9.33 & 9.65 & -0.32 & 98.1 & 90.8 \\
+12\_07 apis & L1$\to$L2 & B & 9.04 & 9.34 & -0.31 & 98.4 & 92.3 \\
+12\_07 apis & L2 & A & 20.97 & 21.08 & -0.11 & 95.2 & 79.3 \\
+12\_07 apis & L2$\to$L3 & B & 20.94 & 21.11 & -0.17 & 95.2 & 79.3 \\
+12\_07 apis & L3 & A & 21.00 & 21.19 & -0.19 & 94.1 & 75.7 \\
+12\_07 apis & L3$\to$L4 & B & 21.89 & 22.32 & -0.44 & 94.5 & 77.4 \\
+12\_07 apis & L4 & A & 23.75 & 24.86 & -1.10 & 93.0 & 74.7 \\
+12\_07 apis & L4$\to$L5 & B & 23.50 & 24.74 & -1.24 & 93.7 & 77.1 \\
+12\_07 apis & L5 & A & 21.86 & 20.52 & +1.34 & 90.5 & 73.0 \\
+12\_07 hathor & L1 & A & 28.44 & 25.94 & +2.50 & 92.2 & 83.6 \\
+12\_07 hathor & L1$\to$L2 & B & 27.03 & 24.63 & +2.40 & 92.7 & 84.8 \\
+12\_07 hathor & L2 & A & 30.73 & 27.54 & +3.19 & 90.6 & 78.7 \\
+12\_07 hathor & L2$\to$L3 & B & 30.68 & 27.50 & +3.18 & 90.7 & 79.0 \\
+12\_07 hathor & L3 & A & 29.89 & 26.79 & +3.10 & 90.1 & 76.8 \\
+12\_07 hathor & L3$\to$L4 & B & 29.52 & 26.34 & +3.18 & 91.1 & 79.5 \\
+12\_07 hathor & L4 & A & 34.99 & 30.43 & +4.56 & 88.0 & 73.9 \\
+12\_07 hathor & L4$\to$L5 & B & 34.98 & 30.40 & +4.58 & 88.1 & 74.1 \\
+12\_07 hathor & L5 & A & 31.69 & 27.46 & +4.23 & 86.4 & 70.0 \\
+12\_07 hathor & L5$\to$L6 & B & 33.30 & 29.65 & +3.66 & 88.8 & 75.1 \\
+12\_07 hathor & L6 & A & 32.91 & 29.74 & +3.17 & 82.9 & 67.3 \\
+12\_07 sobek & L1 & A & 40.98 & 39.69 & +1.29 & 93.5 & 84.9 \\
+12\_07 sobek & L1$\to$L2 & B & 40.93 & 39.55 & +1.39 & 93.5 & 85.0 \\
+12\_07 sobek & L2 & A & 29.13 & 29.90 & -0.76 & 92.0 & 78.7 \\
+12\_07 sobek & L2$\to$L3 & B & 28.85 & 29.26 & -0.41 & 92.7 & 80.8 \\
+12\_07 sobek & L3 & A & 43.07 & 39.31 & +3.76 & 88.7 & 74.9 \\
+12\_07 sobek & L3$\to$L4 & B & 42.50 & 38.55 & +3.95 & 89.3 & 76.9 \\
+12\_07 sobek & L4 & A & 40.63 & 36.89 & +3.74 & 86.9 & 73.1 \\
+12\_07 sobek & L4$\to$L5 & B & 40.62 & 36.88 & +3.74 & 87.1 & 73.3 \\
+12\_07 sobek & L5 & A & 41.85 & 39.60 & +2.26 & 85.5 & 70.1 \\
+12\_07 sparkal1 & L1 & A & 27.86 & 27.90 & -0.04 & 95.1 & 84.3 \\
+12\_07 sparkal1 & L1$\to$L2 & B & 23.83 & 24.22 & -0.39 & 96.7 & 89.4 \\
+12\_07 sparkal1 & L2 & A & 27.63 & 25.68 & +1.95 & 88.4 & 76.0 \\
+12\_07 thoth & L1 & A & 13.44 & 13.74 & -0.30 & 95.0 & 82.8 \\
+12\_07 thoth & L1$\to$L2 & B & 10.75 & 10.81 & -0.05 & 96.9 & 89.3 \\
+12\_07 thoth & L2 & A & 29.35 & 28.53 & +0.82 & 88.7 & 71.7 \\
+12\_08 acl\_jackal2 & L1 & A & 37.34 & 37.01 & +0.33 & 96.6 & 85.3 \\
+12\_08 acl\_jackal2 & L1$\to$L2 & B & 25.12 & 25.50 & -0.39 & 98.0 & 90.9 \\
+12\_08 acl\_jackal2 & L2 & A & 24.40 & 23.65 & +0.76 & 95.0 & 82.0 \\
+12\_08 apis & L1 & A & 12.92 & 13.07 & -0.15 & 96.1 & 86.5 \\
+12\_08 apis & L1$\to$L2 & B & 11.55 & 11.56 & -0.02 & 97.0 & 89.7 \\
+12\_08 apis & L2 & A & 14.00 & 14.09 & -0.10 & 93.5 & 80.7 \\
 \end{longtable}
 \endgroup
 \section{Event-level differences underlying the main accuracy summary}
