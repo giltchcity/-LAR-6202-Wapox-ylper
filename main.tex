@@ -24,7 +24,7 @@ Dear Editor and reviewers,
 Thank you for the detailed comments. We have rewritten the Method section and completed the additional evaluations reported below. The response covers:
 \begin{itemize}[nosep,leftmargin=*]
 \item Explicit definitions, numerical parameters, pseudocode, and a mechanism illustration for the correction pipeline.
-\item A matched target-construction comparison with paired results on ten cases, complemented by an ablation of Stage-1 observation association.
+\item A matched target-construction comparison with paired results on ten cases.
 \item Repeated correction and continued fusion on five multi-loop sequences, with 15 post-correction and 10 post-fusion checkpoints.
 \item Parameter sensitivity, event-level reconstruction differences, and a precise definition of the video runtimes.
 \item ElasticFusion comparisons on TUM RGB-D and Kimera-Multi, and Chamfer distances for the reconstruction and deformation baselines.
@@ -58,7 +58,7 @@ Algorithm 1 in Section III-D now gives the execution order of filtering, target 
 Please add a matched multi-keyframe pose-transport baseline. Keep the candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing unchanged. Instead of constructing each candidate target from the matched range sample as in Eq. (3), apply the corresponding keyframe's pre-to-post pose correction to the original source vertex, then aggregate the candidates. Paired results for the individual ablation cases would show how consistently the measured-sample formulation improves on this control.}
 \begin{reply}
 \textbf{Matched comparison.}
-We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation achieves mean F@10/F@25/F@50 scores of $10.16/26.63/45.41\%$, compared with $10.04/26.55/45.39\%$ for matched pose transport. Table~\ref{tab:reply-r1a-paired} gives all ten paired differences; F@25 increases in nine cases.
+We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation achieves mean F@10/F@25/F@50 scores of $10.16/26.62/45.41\%$, compared with $10.04/26.55/45.39\%$ for matched pose transport. Table~\ref{tab:reply-r1a-paired} gives all ten paired differences; F@25 increases in nine cases.
 
 {\small
 \begin{longtable}{lrrr}
@@ -106,9 +106,18 @@ R1-3(c), Table~\ref{tab:reply-association-gates}, directly tests the Stage-1 ass
 \end{reply}
 \point{R1-3(b): repeated correction and fusion}{Section IV-A already describes sequential processing with fusion resumed from the corrected volume, and Section IV-D reports volumetric consistency. However, the averages do not show how discrepancies evolve over successive correction-and-fusion cycles within a sequence. For a few existing sequences with multiple loop closures, please report the difference in GT-referenced surface scores relative to full reintegration, together with the existing volumetric-consistency metrics, over successive events. Checkpoints immediately after correction and after a specified interval of additional fusion would help distinguish the two stages. The reference should use the same measurement history and corrected poses. Since distance values are reconstructed and source-derived support and weights are transferred repeatedly, this analysis would help establish whether the approximation remains stable during continued use. Exact equivalence with reintegration is not required.}
 \begin{reply}
-We evaluated repeated correction and fusion on the five multi-loop sequences in the ten-sequence ablation set, covering two to six loop closures per sequence and 15 corrections. Each correction replaces the active TSDF, and fusion resumes from it. We record 15 checkpoints immediately after correction (A) and 10 after continued fusion up to the next loop closure, before its correction (B). At each checkpoint, the Voxblox reintegration reference uses the same measurement history and corrected poses as WarpVox.
+We evaluated repeated correction and continued fusion on the five multi-loop sequences in the ten-sequence ablation set, covering two to six loop closures per sequence and 15 corrections. Each correction replaces the active TSDF, after which fusion resumes from the corrected map. We record 15 checkpoints immediately after correction (A) and 10 after continued fusion up to the next loop closure, before its correction (B). At each checkpoint, the Voxblox reintegration reference uses the same measurement history and corrected poses as WarpVox.
 
-Mean F@25 differences from reintegration are $+0.38$\,pp at A and $-0.01$\,pp at B. Continued fusion improves all four volumetric-consistency metrics in each of the ten A-to-B intervals, with mean paired gains of 2.99\,pp in support IoU and 3.52\,pp in weighted Jaccard. Table~\ref{tab:reply-cycles} reports all 25 checkpoints.
+Mean $\Delta F@25$ relative to reintegration is $+0.36$\,pp at A and $-0.01$\,pp at B. Continued fusion improves all four volumetric-consistency metrics in each of the ten A-to-B intervals, with mean paired gains of 2.99\,pp in support IoU, 3.52\,pp in weighted Jaccard, 0.49\,pp in free-space recall, and 1.03\,pp in sign accuracy. Table~\ref{tab:reply-cycles} reports all 25 checkpoints.
+
+The decrease in voxel-level consistency is introduced at correction events rather than during continued fusion, and its magnitude is consistent with the extent of the correction. In 1207_hathor, the third correction moves only 0.4% of the keyframes and reduces weighted Jaccard by 1.41 percentage points. Continued fusion does not reduce any of the four volumetric metrics in the ten A-to-B intervals; instead, it partially restores agreement where new frames re-observe previously corrected regions. The observed recovery is consistent with the amount of new data fused between corrections: weighted Jaccard increases by only 0.04 points after 1 s of fusion, but by 4.47 points after 183 s.
+
+To separate the effect of the later correction from accumulated correction history, we also apply the fifth correction to a freshly reintegrated map with the same measurement history but no previous WarpVox corrections. Its weighted Jaccard is 76.93%, compared with 83.61% after the first correction, showing that the later correction itself is more disruptive at the voxel level. Applying the same fifth correction in the continuous WarpVox run gives 71.84%, a further 5.09-point difference associated with the carried map state.
+
+Importantly, these volumetric metrics compare discrete TSDF state at identical voxel indices: whether a voxel is supported, its accumulated weight, and the sign of its distance value. Consequently, even a local displacement smaller than one voxel can change the identities of many supported or signed voxels and reduce voxel-wise agreement without implying a comparable displacement of the reconstructed surface. Consistent with this distinction, $\Delta F@25$ remains positive through the first nine 1207_hathor checkpoints, ranging from +0.29 to +2.55 percentage points, and becomes negative only at the final two checkpoints (-0.67 and -1.48).
+
+The accumulated difference should therefore be interpreted as voxel-state disagreement with full reintegration rather than accumulated global geometric drift. This behavior is expected when correcting an already fused map: TSDF fusion is many-to-one and does not retain sufficient per-observation provenance to exactly undo and separately reposition all historical measurements after a later trajectory correction. Full reintegration can recover that state by revisiting the original measurements, whereas a map-level correction operates on their fused result. Continued fusion then reduces the discrepancy in regions that are observed again, while discrepancies in unobserved regions persist.
+
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
@@ -140,7 +149,7 @@ For observation $r$ of vertex $j$, the aggregation weight is
 \]
 where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean. With fewer than three valid samples, all are retained. R2-D3--D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
 
-We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The default mean F@25 for this sweep is 26.64\%. The paired changes are:
+We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The default mean F@25 for this sweep is 26.62\%. The paired changes are:
 \begin{center}\small
 \begin{tabular}{lrrr}\toprule
 Change & Mean $\Delta F@25$ (pp) & Case range (pp) & $\Delta$CD (cm)\\\midrule
@@ -153,7 +162,7 @@ $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases.
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.11 percentage points, from 25.54\% to 26.65\%. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
+A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.11 percentage points, from 25.54\% to 26.62\%. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
 
 {\small
 \begin{longtable}{lrrrr}
@@ -161,13 +170,13 @@ A complementary ablation removes all Stage-1 association gates while retaining t
 \toprule
 Association setting & F@10 (\%) & F@25 (\%) & F@50 (\%) & CD\\
 \midrule
-Geometrically verified (default) & 10.16 & 26.65 & 45.54 & 101.7\\
+Geometrically verified (default) & 10.16 & 26.62 & 45.54 & 101.7\\
 All association gates removed & 8.93 & 25.54 & 45.40 & 103.8\\
 \bottomrule
 \end{longtable}
 }
 
-A separate Stage-2 sweep holds its upstream observations fixed and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the RGB-D default. Its default mean F@25 is 26.63\%; the largest absolute case-level change is 0.07 percentage points. Each sweep is compared with its own default run.
+A separate Stage-2 sweep holds its upstream observations fixed and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the RGB-D default. Its default mean F@25 is 26.62\%; the largest absolute case-level change is 0.07 percentage points. Each sweep is compared with its own default run.
 \end{reply}
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
 \begin{reply}
@@ -948,6 +957,8 @@ A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table III c
 At each checkpoint, $\Delta F=F_{\mathrm{WarpVox}}-F_{\mathrm{reint}}$ is the GT-referenced surface-score difference in percentage points (pp). The reference uses the same measurement history and corrected poses. A is recorded immediately after correction; B follows continued fusion up to the next loop closure, before its correction. Thus B L1$\to$L2 is the checkpoint before the L2 correction.
 
 The four volumetric metrics follow Sec.~IV-D: support IoU, weighted Jaccard of voxel weights, reference-weighted free-space recall, and TSDF-sign accuracy. Values are percentages. The final rows give the checkpoint means for A and B separately.
+
+
 \begingroup\small
 \setlength{\tabcolsep}{3pt}
 \begin{longtable}{@{}lrrrrrrr@{}}
