@@ -140,7 +140,7 @@ For observation $r$ of vertex $j$, the aggregation weight is
 \]
 where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean. With fewer than three valid samples, all are retained. R2-D3--D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
 
-We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The default mean F@25 for this sweep is 26.735\%. The paired changes are:
+We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The default mean F@25 for this sweep is 26.64\%. The paired changes are:
 \begin{center}\small
 \begin{tabular}{lrrr}\toprule
 Change & Mean $\Delta F@25$ (pp) & Case range (pp) & $\Delta$CD (cm)\\\midrule
@@ -153,7 +153,7 @@ $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases.
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.11 percentage points, from 25.64\% to 26.75\%. On 12\_07 acl\_jackal2, L2, the corresponding scores are 52.77\% and 65.89\%, a 13.12-percentage-point improvement. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
+A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.11 percentage points, from 25.54\% to 26.65\%. On 12\_07 acl\_jackal2, L2, the corresponding scores are 52.77\% and 65.89\%, a 13.12-percentage-point improvement. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
 
 {\small
 \begin{longtable}{lrrrr}
@@ -161,8 +161,8 @@ A complementary ablation removes all Stage-1 association gates while retaining t
 \toprule
 Association setting & F@10 (\%) & F@25 (\%) & F@50 (\%) & CD\\
 \midrule
-Geometrically verified (default) & 10.16 & 26.75 & 45.54 & 101.7\\
-All association gates removed & 8.93 & 25.64 & 45.40 & 103.8\\
+Geometrically verified (default) & 10.16 & 26.65 & 45.54 & 101.7\\
+All association gates removed & 8.93 & 25.54 & 45.40 & 103.8\\
 \bottomrule
 \end{longtable}
 }
@@ -970,7 +970,7 @@ B L2$\to$L3 & -0.90 & -1.78 & -0.62 & 95.65 & 92.70 & 99.83 & 98.53 \\
 A L3 & -0.12 & -2.63 & +0.05 & 79.33 & 73.34 & 96.55 & 86.59 \\
 \addlinespace[3pt]
 \multicolumn{8}{@{}l}{\textbf{1207\_hathor}}\\
-A L1 & +1.54 & +2.75 & +2.34 & 87.80 & 83.61 & 97.84 & 92.74 \\
+A L1 & +1.54 & +2.55 & +2.34 & 87.80 & 83.61 & 97.84 & 92.74 \\
 B L1$\to$L2 & +0.79 & +1.58 & +0.50 & 88.70 & 85.67 & 98.18 & 93.11 \\
 A L2 & +1.23 & +1.49 & +1.17 & 82.93 & 75.75 & 96.65 & 91.25 \\
 B L2$\to$L3 & +0.83 & +0.92 & +1.14 & 83.14 & 75.92 & 96.70 & 91.31 \\
