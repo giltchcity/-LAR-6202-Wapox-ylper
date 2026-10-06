@@ -6,7 +6,7 @@
 
 - 已起草 62 条回复：Editor 4 条、Reviewer 1 6 条、Reviewer 2 52 条。
 - R1-3(a) 已包含 matched multi-keyframe pose-transport 的十例配对结果、Stage 1 观测关联与 Stage 2 位移构造的关系，并关联到 R1-3(c) 的完整关联门限消融；Editor 对应回复已补齐。
-- R1-3(b) 使用五条多回环序列的干净版数据：15 次纠正、15 个纠正后检查点和 10 个继续融合后检查点。表中保留 F-score 差值与四项原有体积指标；对应数据见 [CSV](data/r1b_five_sequences.csv)。
+- R1-3(b) 使用五条多回环序列的干净版数据：15 次纠正、15 个纠正后检查点和 10 个继续融合后检查点。表中保留 F-score 差值与四项原有体积指标。
 - R1-4 用文字说明主实验的均值和逐事件 F@25 差值范围。另包含参数敏感性、ElasticFusion 对比、Chamfer distance 和计时说明。
 - 采用黑色审稿意见、蓝色作者回复。文字经过 anti-defensive-writing 审校，保留评测范围、不同系统位姿来源、时间口径和体积误差等必要限制。
 - Figure R1 位于 R2-G2 回复之后，采用三面板矢量示意图。[图源与导出文件](figures/mechanisms/)包含绘图脚本、TikZ、SVG 和 PNG 预览；主文件已内嵌 TikZ。
