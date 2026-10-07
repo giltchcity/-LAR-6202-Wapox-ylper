@@ -38,7 +38,7 @@ Section III now defines the association weights, target construction, control se
 \end{reply}
 \point{Editor E2: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
-The benefit of the observation-derived targets is isolated by removing the observations while keeping the rest of the pipeline. On the ten ablation cases, WarpVox reaches 26.62\% at F@25. Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. Removing association verification (R1-3(c)), so that the measured samples of up to 15 keyframes per vertex are combined without being checked against the source surface, gives 25.49\%, below even the nearest-keyframe baseline. The matched multi-keyframe control requested in R1-3(a) keeps the verified support, because its keyframes and weights are determined by the measured samples, and varies only how Stage~2 reads the displacement; there, the measured-sample targets improve F@25 by 0.042 percentage points on average and in eight of the ten cases.
+In WarpVox, the measurements decide which keyframes support each vertex and with what weight (Stage~1), and where the vertex moves (Stage~2). On the ten ablation cases, this construction reaches 26.62\% at F@25, against 25.98\% for Nearest-KF (Table~IV), which uses no observations. Without verification, combining the measured samples of several keyframes gives 25.49\% (R1-3(c)), so the gain comes from the verified support; with that support unchanged, the measured-sample read-out raises F@25 in eight of the ten cases (R1-3(a)).
 \end{reply}
 \point{Editor E3: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
@@ -103,18 +103,19 @@ q_{rj}^{\mathrm{pose}} &= \widehat R_r^+\hat v_{rj}^-+\widehat t_r^+,\\
 where $(\widehat R_r^+,\widehat t_r^+)$ is the corrected keyframe pose. The two candidates thus differ only by the association residual that Stage~1 has already bounded; for RGB-D the bound is at most 0.18\,m over the 10\,m association range, within one 0.25\,m voxel. The small, consistent gain of the measured-sample targets in Table~\ref{tab:reply-r1a-paired} agrees with this bound.
 
 \textbf{Where the benefit of the observation-derived targets appears.}
-This benefit is isolated by removing the observations rather than by changing the Stage-2 read-out. On the same ten cases, WarpVox reaches 26.62\% at F@25. Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. The association ablation in R1-3(c) (Table~\ref{tab:reply-association-gates}) still combines the measured samples of up to 15 keyframes per vertex but no longer checks them against the source surface, and reaches 25.49\%, below even the nearest-keyframe baseline. With verification, the same combination improves on Nearest-KF by 0.64 percentage points. The benefit therefore comes from the Stage-1 verification of which measurements support each vertex, and Stage~2 converts this verified support into the target. These components serve WarpVox's system contribution: correcting an already fused TSDF from trajectory updates and restoring the volumetric state needed for continued fusion.
+Because the measurements decide which keyframes are combined and with what weight, the benefit of combining several keyframes is tested by varying this support. On the same ten cases, WarpVox reaches 26.62\% at F@25, and Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. The association ablation in R1-3(c) still combines the measured samples of up to 15 keyframes per vertex but no longer checks them against the source surface, and reaches 25.49\%, below even the nearest-keyframe baseline. With verification, the same combination improves on Nearest-KF by 0.64 percentage points. The benefit therefore comes from the Stage-1 verification of which measurements support each vertex, and Stage~2 converts this verified support into the target. These components serve WarpVox's system contribution: correcting an already fused TSDF from trajectory updates and restoring the volumetric state needed for continued fusion.
 \end{reply}
 \point{R1-3(b): repeated correction and fusion}{Section IV-A already describes sequential processing with fusion resumed from the corrected volume, and Section IV-D reports volumetric consistency. However, the averages do not show how discrepancies evolve over successive correction-and-fusion cycles within a sequence. For a few existing sequences with multiple loop closures, please report the difference in GT-referenced surface scores relative to full reintegration, together with the existing volumetric-consistency metrics, over successive events. Checkpoints immediately after correction and after a specified interval of additional fusion would help distinguish the two stages. The reference should use the same measurement history and corrected poses. Since distance values are reconstructed and source-derived support and weights are transferred repeatedly, this analysis would help establish whether the approximation remains stable during continued use. Exact equivalence with reintegration is not required.}
 \begin{reply}
-We evaluated repeated correction and continued fusion on the five multi-loop sequences in the ten-sequence ablation set, covering two to six loop closures per sequence and 15 corrections. Each correction replaces the active TSDF, after which fusion resumes from the corrected map. We record 15 checkpoints immediately after correction (A) and 10 after continued fusion up to the next loop closure, before its correction (B). At each checkpoint, the Voxblox reintegration reference uses the same measurement history and corrected poses as WarpVox.
+We evaluated repeated correction and continued fusion on the five multi-loop sequences in the ten-sequence ablation set, covering two to six loop closures per sequence and 15 corrections. Each correction replaces the active TSDF, after which fusion resumes from the corrected map. We record 15 checkpoints immediately after correction (A) and 10 after continued fusion up to the next loop closure, before its correction (B); these fusion intervals span 1.44--599.03\,s of recorded sequence and are listed in Table~\ref{tab:reply-cycles}. At each checkpoint, the Voxblox reintegration reference uses the same measurement history and corrected poses as WarpVox.
 
-Mean $\Delta F@25$ relative to reintegration is $+0.36$\,pp at A and $-0.01$\,pp at B. Continued fusion improves all four volumetric-consistency metrics in each of the ten A-to-B intervals, with mean paired gains of 2.99\,pp in support IoU, 3.52\,pp in weighted Jaccard, 0.49\,pp in free-space recall, and 1.03\,pp in sign accuracy. Table~\ref{tab:reply-cycles} reports all 25 checkpoints.
+Surface accuracy remains on par with reintegration through repeated correction and fusion: mean $\Delta F@25$ is $+0.36$\,pp at A and $-0.01$\,pp at B. Continued fusion improves all four volumetric-consistency metrics in each of the ten A-to-B intervals, with mean paired gains of 2.99\,pp in support IoU, 3.52\,pp in weighted Jaccard, 0.49\,pp in free-space recall, and 1.03\,pp in sign accuracy, as new frames re-observe previously corrected regions. Table~\ref{tab:reply-cycles} reports all 25 checkpoints.
 
-Across successive corrections, the surface-score differences relative to full reintegration do not exhibit a consistent monotonic decline. The volumetric metrics compare support, weights, and signs at identical voxel coordinates. Consequently, even a local displacement smaller than one voxel can change voxel-wise agreement without a comparable change in geometric accuracy. Weighted Jaccard thus characterizes voxel-state agreement, while the GT-referenced surface scores assess geometric accuracy. Where the two volumes correspond one-to-one, WarpVox agrees closely with reintegration.
+Across successive corrections, the surface-score differences relative to full reintegration do not exhibit a consistent monotonic decline. The volumetric metrics measure a different property: agreement with the reintegrated volume in support, weights, free space, and signs at identical voxel coordinates. Weighted Jaccard reaches 1 only when both volumes support the same voxels with the same weights, so any difference from the reintegrated state lowers it, whether the corrected surface scores higher or lower against the ground truth. After the first correction of 1207\_hathor, WarpVox exceeds reintegration by 2.55\,pp at F@25, yet its weighted Jaccard is 83.61\%; over all A checkpoints, a mean $\Delta F@25$ of $+0.36$\,pp coincides with a mean weighted Jaccard of 80.09\%. Because even a displacement smaller than one voxel can change voxel-wise agreement, each correction can introduce new voxel-coordinate differences. These differences can add up over successive corrections without being accompanied by a loss in geometric accuracy, while continued fusion reduces them, so weighted Jaccard falls at corrections and rises during fusion without tracking geometric accuracy. Weighted Jaccard characterizes voxel-state agreement, whereas the GT-referenced surface scores assess geometric accuracy.
 
+To separate the fifth correction of 1207\_hathor from the correction history, we also apply it to a freshly reintegrated map with the same measurement history but no previous WarpVox corrections, which gives a weighted Jaccard of 76.93\%. Of the difference between the first and fifth corrections in the continuous run (83.61\% vs.\ 71.84\%), 6.68 points therefore arise from the fifth correction itself and 5.09 points from voxel state carried from earlier corrections, while $\Delta F@25$ at this checkpoint is $+1.12$\,pp.
 
-
+Because TSDF fusion is many-to-one, a correction that updates the fused map, rather than re-fusing every stored measurement, leaves voxel-state differences in regions that are not observed again; reintegration removes them by re-fusing the full measurement history, a cost that WarpVox avoids. Across the 25 checkpoints, surface accuracy stays on par with reintegration, and continued fusion improves voxel agreement where the map is re-observed.
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
@@ -139,7 +140,7 @@ TSDF reconstruction & $\tau=4s$, $\rho=1.5s$, $w_{\max}=10^4$\\
 Source transport cell width & $\tau$\\\bottomrule
 \end{tabular}
 \end{center}
-These settings are fixed across datasets and voxel resolutions, with modality-specific values identified in the parameter table. Distances expressed as multiples of voxel size $s$ scale with the grid resolution.
+All settings are fixed: within each modality, the same values are used for every dataset and sequence, and settings expressed as multiples of the voxel size $s$ scale with the grid resolution.
 
 For observation $r$ of vertex $j$, the aggregation weight is
 \[
@@ -150,7 +151,7 @@ For observation $r$ of vertex $j$, the aggregation weight is
 \]
 where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean. With fewer than three valid samples, all are retained. R2-D3--D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
 
-We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The default mean F@25 for this sweep is 26.62\%. The paired changes are:
+We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The fixed setting reaches a mean F@25 of 26.62\%. The paired changes are:
 \begin{center}\small
 \begin{tabular}{lrrr}\toprule
 Change & Mean $\Delta F@25$ (pp) & Case range (pp) & $\Delta$CD (cm)\\\midrule
@@ -160,10 +161,10 @@ $\alpha_{\min}:0.05\to0$ & $-0.030$ & $[-0.54,+0.33]$ & $-0.36$\\
 $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 \end{tabular}
 \end{center}
-The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases.
+The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases. A separate Stage-2 sweep keeps its upstream observations unchanged and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the fixed RGB-D values; the largest absolute case-level change is 0.07 percentage points.
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes association verification altogether: no geometric gate $\delta_{rj}\le g_0+g_1z_{rj}^-$, no $\alpha_{\min}$, and $\alpha_{rj}$ reduced to its incidence factor $|\cos\phi_{rj}|$. Every valid projected depth sample is then a candidate, each vertex keeps its 15 most frontal ones, Stages~2--4 are unchanged, and the targets are still the measured samples. Table~\ref{tab:reply-association-gates} compares this variant with the default on the same ten cases. Verification raises mean F@25 by 1.13 percentage points, from 25.49\% to 26.62\%. Without verification, the targets fall below the nearest-keyframe baseline in Table~IV (25.98\%); this ablation therefore isolates the benefit of the observation-derived targets requested in E2 and discussed in R1-3(a).
+A complementary ablation removes association verification altogether: no geometric gate $\delta_{rj}\le g_0+g_1z_{rj}^-$, no $\alpha_{\min}$, and $\alpha_{rj}$ reduced to its incidence factor $|\cos\phi_{rj}|$. Every valid projected depth sample is then a candidate, each vertex keeps its 15 most frontal ones, Stages~2--4 are unchanged, and the targets are still the measured samples. Table~\ref{tab:reply-association-gates} compares this variant with the fixed setting on the same ten cases. Verification raises mean F@25 by 1.13 percentage points, from 25.49\% to 26.62\%, whereas the gate and cutoff changes tested above alter it by at most 0.19 points: the results rest on verification itself rather than on the exact values of its thresholds. Without verification, the combined measured samples fall below the nearest-keyframe baseline in Table~IV (25.98\%); this ablation therefore further locates the benefit of the observation-derived targets in the verified support discussed in R1-3(a).
 
 {\small
 \begin{longtable}{lrrrr}
@@ -171,14 +172,13 @@ A complementary ablation removes association verification altogether: no geometr
 \toprule
 Association setting & F@10 (\%) & F@25 (\%) & F@50 (\%) & CD\\
 \midrule
-Geometrically verified (default) & 10.16 & 26.62 & 45.40 & 101.7\\
+Geometrically verified (fixed setting) & 10.16 & 26.62 & 45.40 & 101.7\\
 All association gates removed & 8.93 & 25.49 & 45.29 & 103.8\\
 \bottomrule
 \end{longtable}
 }
-
-A separate Stage-2 sweep holds its upstream observations fixed and varies $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m around the RGB-D default. Its default mean F@25 is 26.62\%; the largest absolute case-level change is 0.07 percentage points. Each sweep is compared with its own default run.
 \end{reply}
+
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
 \begin{reply}
 The 0.32\,pp figure refers to dataset-mean F@25 differences (WarpVox minus reintegration): $+0.05$\,pp on Kimera-Multi and $-0.32$\,pp on KITTI. We explicitly identify these as dataset means in the revised abstract. Across individual loop-closure events, the differences range from $-2.91$ to $+2.59$\,pp on Kimera-Multi and from $-3.03$ to $+1.80$\,pp on KITTI.
@@ -951,64 +951,69 @@ A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table III c
 
 \clearpage
 \appendix
+
+
+
 \section{Successive correction and fusion checkpoints}
 \label{app:cycles}
-At each checkpoint, $\Delta F=F_{\mathrm{WarpVox}}-F_{\mathrm{reint}}$ is the GT-referenced surface-score difference in percentage points (pp). The reference uses the same measurement history and corrected poses. A is recorded immediately after correction; B follows continued fusion up to the next loop closure, before its correction. Thus B L1$\to$L2 is the checkpoint before the L2 correction.
+At each checkpoint, $\Delta F=F_{\mathrm{WarpVox}}-F_{\mathrm{reint}}$ is the GT-referenced surface-score difference in percentage points (pp). The reference uses the same measurement history and corrected poses. A is recorded immediately after correction; B follows continued fusion up to the next loop closure, before its correction. Thus B L1$\to$L2 is the checkpoint before the L2 correction. The Fusion column gives the recorded-sequence duration of each continued-fusion interval.
 
 The four volumetric metrics follow Sec.~IV-D: support IoU, weighted Jaccard of voxel weights, reference-weighted free-space recall, and TSDF-sign accuracy. Values are percentages. The final rows give the checkpoint means for A and B separately.
 
 
 \begingroup\small
 \setlength{\tabcolsep}{3pt}
-\begin{longtable}{@{}lrrrrrrr@{}}
+\begin{longtable}{@{}lrrrrrrrr@{}}
 \caption{Repeated correction and continued fusion on five multi-loop sequences.}\label{tab:reply-cycles}\\
 \toprule
-Checkpoint & \multicolumn{3}{c}{$\Delta F$ (pp)} & Support & Weighted & Free-space & Sign\\
-\cmidrule(lr){2-4}
-& @10 & @25 & @50 & IoU (\%) & Jaccard (\%) & recall (\%) & accuracy (\%)\\\midrule\endfirsthead
+Checkpoint & Fusion & \multicolumn{3}{c}{$\Delta F$ (pp)} & Support & Weighted & Free-space & Sign\\
+\cmidrule(lr){3-5}
+& (s) & @10 & @25 & @50 & IoU (\%) & Jaccard (\%) & recall (\%) & accuracy (\%)\\\midrule\endfirsthead
 \toprule
-Checkpoint & \multicolumn{3}{c}{$\Delta F$ (pp)} & Support & Weighted & Free-space & Sign\\
-\cmidrule(lr){2-4}
-& @10 & @25 & @50 & IoU (\%) & Jaccard (\%) & recall (\%) & accuracy (\%)\\\midrule\endhead
-\midrule\multicolumn{8}{r}{Continued on next page}\\\endfoot
+Checkpoint & Fusion & \multicolumn{3}{c}{$\Delta F$ (pp)} & Support & Weighted & Free-space & Sign\\
+\cmidrule(lr){3-5}
+& (s) & @10 & @25 & @50 & IoU (\%) & Jaccard (\%) & recall (\%) & accuracy (\%)\\\midrule\endhead
+\midrule\multicolumn{9}{r}{Continued on next page}\\\endfoot
 \bottomrule\endlastfoot
-\multicolumn{8}{@{}l}{\textbf{1207\_acl\_jackal2}}\\
-A L1 & -0.20 & +1.01 & +0.90 & 94.45 & 92.11 & 99.45 & 98.46 \\
-B L1$\to$L2 & -0.71 & -0.58 & -0.32 & 98.76 & 97.94 & 99.92 & 99.55 \\
-A L2 & +0.40 & +0.62 & +1.72 & 88.14 & 81.38 & 98.38 & 96.34 \\
-B L2$\to$L3 & -0.90 & -1.78 & -0.62 & 95.65 & 92.70 & 99.83 & 98.53 \\
-A L3 & -0.12 & -2.63 & +0.05 & 79.33 & 73.34 & 96.55 & 86.59 \\
+\multicolumn{9}{@{}l}{\textbf{1207\_acl\_jackal2}}\\
+A L1 & -- & -0.20 & +1.01 & +0.90 & 94.45 & 92.11 & 99.45 & 98.46 \\
+B L1$\to$L2 & 290.62 & -0.71 & -0.58 & -0.32 & 98.76 & 97.94 & 99.92 & 99.55 \\
+A L2 & -- & +0.40 & +0.62 & +1.72 & 88.14 & 81.38 & 98.38 & 96.34 \\
+B L2$\to$L3 & 599.03 & -0.90 & -1.78 & -0.62 & 95.65 & 92.70 & 99.83 & 98.53 \\
+A L3 & -- & -0.12 & -2.63 & +0.05 & 79.33 & 73.34 & 96.55 & 86.59 \\
 \addlinespace[3pt]
-\multicolumn{8}{@{}l}{\textbf{1207\_hathor}}\\
-A L1 & +1.54 & +2.55 & +2.34 & 87.80 & 83.61 & 97.84 & 92.74 \\
-B L1$\to$L2 & +0.79 & +1.58 & +0.50 & 88.70 & 85.67 & 98.18 & 93.11 \\
-A L2 & +1.23 & +1.49 & +1.17 & 82.93 & 80.75 & 96.65 & 91.25 \\
-B L2$\to$L3 & +0.83 & +0.92 & +1.14 & 83.14 & 80.92 & 96.70 & 91.31 \\
-A L3 & +0.24 & +0.37 & +0.57 & 81.40 & 79.51 & 96.07 & 90.74 \\
-B L3$\to$L4 & +0.29 & +0.29 & +0.65 & 83.52 & 81.83 & 96.63 & 91.66 \\
-A L4 & +0.73 & +1.18 & +0.77 & 78.19 & 77.00 & 95.15 & 88.59 \\
-B L4$\to$L5 & +0.82 & +1.43 & +0.66 & 78.33 & 77.04 & 95.22 & 88.65 \\
-A L5 & +0.25 & +1.12 & +1.48 & 74.44 & 71.84 & 94.44 & 87.11 \\
-B L5$\to$L6 & -0.58 & -0.67 & -0.11 & 78.62 & 76.31 & 95.51 & 89.18 \\
-A L6 & +0.00 & -1.48 & -1.28 & 71.69 & 70.47 & 93.61 & 84.47 \\
+\multicolumn{9}{@{}l}{\textbf{1207\_hathor}}\\
+A L1 & -- & +1.54 & +2.55 & +2.34 & 87.80 & 83.61 & 97.84 & 92.74 \\
+B L1$\to$L2 & 154.25 & +0.79 & +1.58 & +0.50 & 88.70 & 85.67 & 98.18 & 93.11 \\
+A L2 & -- & +1.23 & +1.49 & +1.17 & 82.93 & 80.75 & 96.65 & 91.25 \\
+B L2$\to$L3 & 8.96 & +0.83 & +0.92 & +1.14 & 83.14 & 80.92 & 96.70 & 91.31 \\
+A L3 & -- & +0.24 & +0.37 & +0.57 & 81.40 & 79.51 & 96.07 & 90.74 \\
+B L3$\to$L4 & 177.31 & +0.29 & +0.29 & +0.65 & 83.52 & 81.83 & 96.63 & 91.66 \\
+A L4 & -- & +0.73 & +1.18 & +0.77 & 78.19 & 77.00 & 95.15 & 88.59 \\
+B L4$\to$L5 & 1.44 & +0.82 & +1.43 & +0.66 & 78.33 & 77.04 & 95.22 & 88.65 \\
+A L5 & -- & +0.25 & +1.12 & +1.48 & 74.44 & 71.84 & 94.44 & 87.11 \\
+B L5$\to$L6 & 182.89 & -0.58 & -0.67 & -0.11 & 78.62 & 76.31 & 95.51 & 89.18 \\
+A L6 & -- & +0.00 & -1.48 & -1.28 & 71.69 & 70.47 & 93.61 & 84.47 \\
 \addlinespace[3pt]
-\multicolumn{8}{@{}l}{\textbf{1207\_sparkal1}}\\
-A L1 & +0.10 & +0.06 & -0.12 & 88.33 & 88.32 & 98.92 & 95.18 \\
-B L1$\to$L2 & -0.26 & -0.33 & -0.37 & 92.02 & 91.02 & 99.28 & 96.73 \\
-A L2 & +0.78 & +1.68 & +0.82 & 79.62 & 71.09 & 96.81 & 89.19 \\
+\multicolumn{9}{@{}l}{\textbf{1207\_sparkal1}}\\
+A L1 & -- & +0.10 & +0.06 & -0.12 & 88.33 & 88.32 & 98.92 & 95.18 \\
+B L1$\to$L2 & 238.77 & -0.26 & -0.33 & -0.37 & 92.02 & 91.02 & 99.28 & 96.73 \\
+A L2 & -- & +0.78 & +1.68 & +0.82 & 79.62 & 71.09 & 96.81 & 89.19 \\
 \addlinespace[3pt]
-\multicolumn{8}{@{}l}{\textbf{1208\_acl\_jackal2}}\\
-A L1 & +0.29 & -0.07 & -1.77 & 88.37 & 87.70 & 99.33 & 96.90 \\
-B L1$\to$L2 & -0.43 & -0.70 & -1.67 & 92.71 & 91.57 & 99.69 & 98.11 \\
-A L2 & +0.47 & +0.33 & -0.80 & 84.90 & 78.34 & 98.63 & 95.44 \\
+\multicolumn{9}{@{}l}{\textbf{1208\_acl\_jackal2}}\\
+A L1 & -- & +0.29 & -0.07 & -1.77 & 88.37 & 87.70 & 99.33 & 96.90 \\
+B L1$\to$L2 & 289.05 & -0.43 & -0.70 & -1.67 & 92.71 & 91.57 & 99.69 & 98.11 \\
+A L2 & -- & +0.47 & +0.33 & -0.80 & 84.90 & 78.34 & 98.63 & 95.44 \\
 \addlinespace[3pt]
-\multicolumn{8}{@{}l}{\textbf{1208\_apis}}\\
-A L1 & +0.29 & -0.31 & -1.38 & 88.98 & 87.94 & 99.16 & 96.20 \\
-B L1$\to$L2 & +0.19 & -0.30 & -0.88 & 91.49 & 90.35 & 99.35 & 97.02 \\
-A L2 & +0.03 & -0.46 & -1.04 & 83.17 & 77.91 & 98.14 & 93.60 \\
+\multicolumn{9}{@{}l}{\textbf{1208\_apis}}\\
+A L1 & -- & +0.29 & -0.31 & -1.38 & 88.98 & 87.94 & 99.16 & 96.20 \\
+B L1$\to$L2 & 206.08 & +0.19 & -0.30 & -0.88 & 91.49 & 90.35 & 99.35 & 97.02 \\
+A L2 & -- & +0.03 & -0.46 & -1.04 & 83.17 & 77.91 & 98.14 & 93.60 \\
 \midrule
-Mean A ($n=15$) & +0.40 & +0.36 & +0.23 & 83.45 & 80.09 & 97.28 & 92.19 \\
-Mean B ($n=10$) & +0.00 & -0.01 & -0.10 & 88.29 & 86.54 & 98.03 & 94.39 \\
+Mean A ($n=15$) & -- & +0.40 & +0.36 & +0.23 & 83.45 & 80.09 & 97.28 & 92.19 \\
+Mean B ($n=10$) & 214.84 & +0.00 & -0.01 & -0.10 & 88.29 & 86.54 & 98.03 & 94.39 \\
 \end{longtable}
 \endgroup
+
+
 \end{document}
