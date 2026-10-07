@@ -24,7 +24,7 @@ Dear Editor and reviewers,
 Thank you for the detailed comments. We have rewritten the Method section and completed the additional evaluations reported below. The response covers:
 \begin{itemize}[nosep,leftmargin=*]
 \item Explicit definitions, numerical parameters, pseudocode, and a mechanism illustration for the correction pipeline.
-\item A matched target-construction comparison with paired results on ten cases.
+\item A matched target-construction comparison with paired results on ten cases, and an association-gate ablation that isolates the benefit of the observation-derived targets.
 \item Repeated correction and continued fusion on five multi-loop sequences, with 15 post-correction and 10 post-fusion checkpoints.
 \item Parameter sensitivity, event-level reconstruction differences, and a precise definition of the video runtimes.
 \item ElasticFusion comparisons on TUM RGB-D and Kimera-Multi, and Chamfer distances for the reconstruction and deformation baselines.
@@ -38,7 +38,7 @@ Section III now defines the association weights, target construction, control se
 \end{reply}
 \point{Editor E2: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
-R1-3(a) reports the requested matched multi-keyframe comparison on all ten cases. It changes the Stage-2 candidate coordinates while retaining the Stage-1 associations, reliability weights, aggregation/trimming, and downstream processing. The separate Stage-1 ablation in R1-3(c) tests association screening: geometric verification raises mean F@25 from 25.64\% to 26.75\%.
+The benefit of the observation-derived targets is isolated by removing the observations while keeping the rest of the pipeline. On the ten ablation cases, WarpVox reaches 26.62\% at F@25. Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. Removing association verification (R1-3(c)), so that the measured samples of up to 15 keyframes per vertex are combined without being checked against the source surface, gives 25.49\%, below even the nearest-keyframe baseline. The matched multi-keyframe control requested in R1-3(a) keeps the verified support, because its keyframes and weights are determined by the measured samples, and varies only how Stage~2 reads the displacement; there, the measured-sample targets improve F@25 by 0.08 percentage points, in nine of the ten cases.
 \end{reply}
 \point{Editor E3: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
@@ -87,22 +87,23 @@ Mean & $+0.12$ & $+0.08$ & $+0.02$\\
 \end{longtable}
 }
 
-\textbf{What the comparison tests.}
-TSDF fusion combines measurements from multiple frames into a shared distance field (\href{https://arxiv.org/html/1611.03631#S4}{Voxblox, Sec.~IV}). Stage 1 re-establishes geometrically consistent associations between this fused surface and keyframe measurements under the pre-correction poses. Stage 2 uses the corrected poses to turn these associations into surface displacements. The matched comparison retains the Stage-1 associations and changes the candidate coordinates used in Stage 2.
+\textbf{What the control retains.}
+In WarpVox, the candidate keyframes and reliability weights are determined by the measured samples. Stage~1 projects each source vertex into a candidate keyframe, samples the measurement $m_{rj}$, and retains the keyframe only if this sample passes the geometric gate $\delta_{rj}\le g_0+g_1z_{rj}^-$ and, for RGB-D, the reliability cutoff $\alpha_{\min}$; the reliability weight $\alpha_{rj}$ depends on the same sample through $\delta_{rj}$ and $|z^m_{rj}-z^-_{rj}|$. Keeping these keyframes and weights fixed therefore keeps the observation support in both variants. Both sets of targets are observation-derived; the control changes only how Stage~2 reads the displacement from an association that Stage~1 has already verified.
 
-Our construction preserves the associated measurement's sensor-frame position when applying the corrected pose. With $m_{rj}$ the measurement and $\hat v_{rj}^-$ the source vertex expressed in the same pre-correction keyframe frame, the candidates satisfy
+\textbf{Stage~2 as the continuation of Stage~1.}
+TSDF fusion combines measurements from multiple frames into a shared distance field (\href{https://arxiv.org/html/1611.03631#S4}{Voxblox, Sec.~IV}). Stage~1 recovers this multi-keyframe support under the pre-correction poses, and Stage~2 moves the vertex to where the supporting measurements lie under the corrected poses. Matched pose transport instead moves the source vertex, as if each measurement lay exactly at it. With $m_{rj}$ the measurement and $\hat v_{rj}^-$ the source vertex in the same pre-correction keyframe frame,
 \[
 \begin{aligned}
 q_{rj}^{\mathrm{meas}} &= \widehat R_r^+ m_{rj}+\widehat t_r^+,\\
 q_{rj}^{\mathrm{pose}} &= \widehat R_r^+\hat v_{rj}^-+\widehat t_r^+,\\
-q_{rj}^{\mathrm{meas}}-q_{rj}^{\mathrm{pose}}
-&=\widehat R_r^+(m_{rj}-\hat v_{rj}^-).
+\bigl\|q_{rj}^{\mathrm{meas}}-q_{rj}^{\mathrm{pose}}\bigr\|
+&=\bigl\|\widehat R_r^+(m_{rj}-\hat v_{rj}^-)\bigr\|=\delta_{rj}\le g_0+g_1z_{rj}^-,
 \end{aligned}
 \]
-Here $(\widehat R_r^+,\widehat t_r^+)$ is the corrected keyframe pose. Both constructions transfer the same pose corrections through the same associations; their candidate coordinates differ by the rotated association residual, whose magnitude is bounded by the Stage-1 gate. The close F@25 and F@50 scores are consistent with this bounded difference.
+where $(\widehat R_r^+,\widehat t_r^+)$ is the corrected keyframe pose. The two candidates thus differ only by the association residual that Stage~1 has already bounded; for RGB-D the bound is at most 0.18\,m over the 10\,m association range, within one 0.25\,m voxel. The small, consistent gain of the measured-sample targets in Table~\ref{tab:reply-r1a-paired} agrees with this bound.
 
-\textbf{Association ablation and system contribution.}
-R1-3(c), Table~\ref{tab:reply-association-gates}, directly tests the Stage-1 association screening retained in both variants: geometric verification raises mean F@25 from 25.64\% to 26.75\%. The original Nearest-KF comparison evaluates the complete target construction against assigning each control the correction of its spatially nearest keyframe. These components serve WarpVox's system contribution: correcting an already fused TSDF from trajectory updates and restoring the volumetric state needed for continued fusion.
+\textbf{Where the benefit of the observation-derived targets appears.}
+This benefit is isolated by removing the observations rather than by changing the Stage-2 read-out. On the same ten cases, WarpVox reaches 26.62\% at F@25. Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. The association ablation in R1-3(c) (Table~\ref{tab:reply-association-gates}) still combines the measured samples of up to 15 keyframes per vertex but no longer checks them against the source surface, and reaches 25.49\%, below even the nearest-keyframe baseline. With verification, the same combination improves on Nearest-KF by 0.64 percentage points. The benefit therefore comes from the Stage-1 verification of which measurements support each vertex, and Stage~2 converts this verified support into the target. These components serve WarpVox's system contribution: correcting an already fused TSDF from trajectory updates and restoring the volumetric state needed for continued fusion.
 \end{reply}
 \point{R1-3(b): repeated correction and fusion}{Section IV-A already describes sequential processing with fusion resumed from the corrected volume, and Section IV-D reports volumetric consistency. However, the averages do not show how discrepancies evolve over successive correction-and-fusion cycles within a sequence. For a few existing sequences with multiple loop closures, please report the difference in GT-referenced surface scores relative to full reintegration, together with the existing volumetric-consistency metrics, over successive events. Checkpoints immediately after correction and after a specified interval of additional fusion would help distinguish the two stages. The reference should use the same measurement history and corrected poses. Since distance values are reconstructed and source-derived support and weights are transferred repeatedly, this analysis would help establish whether the approximation remains stable during continued use. Exact equivalence with reintegration is not required.}
 \begin{reply}
@@ -110,11 +111,11 @@ We evaluated repeated correction and continued fusion on the five multi-loop seq
 
 Mean $\Delta F@25$ relative to reintegration is $+0.36$\,pp at A and $-0.01$\,pp at B. Continued fusion improves all four volumetric-consistency metrics in each of the ten A-to-B intervals, with mean paired gains of 2.99\,pp in support IoU, 3.52\,pp in weighted Jaccard, 0.49\,pp in free-space recall, and 1.03\,pp in sign accuracy. Table~\ref{tab:reply-cycles} reports all 25 checkpoints.
 
-The decrease in voxel-level consistency is introduced at correction events rather than during continued fusion, and its magnitude is consistent with the extent of the correction. In 1207_hathor, the third correction moves only 0.4% of the keyframes and reduces weighted Jaccard by 1.41 percentage points. Continued fusion does not reduce any of the four volumetric metrics in the ten A-to-B intervals; instead, it partially restores agreement where new frames re-observe previously corrected regions. The observed recovery is consistent with the amount of new data fused between corrections: weighted Jaccard increases by only 0.04 points after 1 s of fusion, but by 4.47 points after 183 s.
+The decrease in voxel-level consistency is introduced at correction events rather than during continued fusion, and its magnitude is consistent with the extent of the correction. In 1207\_hathor, the third correction moves only 0.4\% of the keyframes by more than one voxel (25\,cm) and reduces weighted Jaccard by 1.41 percentage points. Continued fusion does not reduce any of the four volumetric metrics in the ten A-to-B intervals; instead, it partially restores agreement where new frames re-observe previously corrected regions. The observed recovery is consistent with the amount of new data fused between corrections: weighted Jaccard increases by only 0.04 points after 1.4\,s of recorded sequence between corrections, but by 4.47 points after 182.9\,s.
 
-To separate the effect of the later correction from accumulated correction history, we also apply the fifth correction to a freshly reintegrated map with the same measurement history but no previous WarpVox corrections. Its weighted Jaccard is 76.93%, compared with 83.61% after the first correction, showing that the later correction itself is more disruptive at the voxel level. Applying the same fifth correction in the continuous WarpVox run gives 71.84%, a further 5.09-point difference associated with the carried map state.
+To separate the effect of the later correction from accumulated correction history, we also apply the fifth correction to a freshly reintegrated map with the same measurement history but no previous WarpVox corrections. Its weighted Jaccard is 76.93\%, compared with 83.61\% after the first correction, showing that the later correction itself is more disruptive at the voxel level. Applying the same fifth correction in the continuous WarpVox run gives 71.84\%, a further 5.09-point difference associated with the carried map state.
 
-Importantly, these volumetric metrics compare discrete TSDF state at identical voxel indices: whether a voxel is supported, its accumulated weight, and the sign of its distance value. Consequently, even a local displacement smaller than one voxel can change the identities of many supported or signed voxels and reduce voxel-wise agreement without implying a comparable displacement of the reconstructed surface. Consistent with this distinction, $\Delta F@25$ remains positive through the first nine 1207_hathor checkpoints, ranging from +0.29 to +2.55 percentage points, and becomes negative only at the final two checkpoints (-0.67 and -1.48).
+Importantly, these volumetric metrics compare discrete TSDF state at identical voxel indices: whether a voxel is supported, its accumulated weight, and the sign of its distance value. Consequently, even a local displacement smaller than one voxel can change the identities of many supported or signed voxels and reduce voxel-wise agreement without implying a comparable displacement of the reconstructed surface. Consistent with this distinction, $\Delta F@25$ remains positive through the first nine 1207\_hathor checkpoints, ranging from $+0.29$ to $+2.55$ percentage points, and becomes negative only at the final two checkpoints ($-0.67$ and $-1.48$).
 
 The accumulated difference should therefore be interpreted as voxel-state disagreement with full reintegration rather than accumulated global geometric drift. This behavior is expected when correcting an already fused map: TSDF fusion is many-to-one and does not retain sufficient per-observation provenance to exactly undo and separately reposition all historical measurements after a later trajectory correction. Full reintegration can recover that state by revisiting the original measurements, whereas a map-level correction operates on their fused result. Continued fusion then reduces the discrepancy in regions that are observed again, while discrepancies in unobserved regions persist.
 
@@ -126,7 +127,10 @@ The association reliability is defined in Section III-B and reproduced in R2-B3.
 \begin{tabular}{p{0.37\linewidth}p{0.55\linewidth}}\toprule
 Quantity & Setting\\\midrule
 Association range & $0.1$--$10$\,m (RGB-D); $0.5$--$80$\,m (LiDAR)\\
+Candidate index radius & $z_{\max}\sqrt{1+x_e^2+y_e^2}$, 14.3--14.7\,m depending on camera intrinsics (RGB-D); 80\,m grid (LiDAR)\\
 Measurement gate $g_0+g_1z^-$ & $0.08+0.01z^-$\,m (RGB-D); $0.25+0.003z^-$\,m (LiDAR)\\
+Reliability cutoff $\alpha_{\min}$ & $0.05$ (RGB-D); not used (LiDAR)\\
+Candidates per vertex $n_{\max}$ & 15\\
 Reliability scales $(\sigma_g,\sigma_z,z_0)$ & $(0.048,0.08,8)$\,m (RGB-D); $(0.15,\text{--},40)$\,m (LiDAR)\\
 Target damping scale $\zeta_m$ & $3$\,m (RGB-D); $20$\,m (LiDAR)\\
 Stage-2 trimming & $\kappa=2.5$; $\epsilon_m=0.02$\,m (RGB-D), $0.05$\,m (LiDAR)\\
@@ -135,7 +139,8 @@ Fragments and proxy & $N_{\rm f}=100$ faces; $P_{\max}=60{,}000$; proxy above $1
 Welsch consolidation & 4 rounds; $c_{\rm g}=4.685$; at least 6 fitting neighbours\\
 ARAP & 20 local--global iterations\\
 Mesh repair & Edge/area/aspect bounds $3/6/20$; long-edge threshold $0.5$\,m; at most 3 passes and 80 Jacobi steps per pass\\
-TSDF reconstruction & $\tau=4s$, $\rho=1.5s$, $\tau_{\rm fs}=1.5s$, face search radius $16s$, $w_{\max}=10^4$\\\bottomrule
+TSDF reconstruction & $\tau=4s$, $\rho=1.5s$, $w_{\max}=10^4$\\
+Source transport cell width & $\tau$\\\bottomrule
 \end{tabular}
 \end{center}
 These settings are fixed across datasets and voxel resolutions, with modality-specific values identified in the parameter table. Distances expressed as multiples of voxel size $s$ scale with the grid resolution.
@@ -162,7 +167,7 @@ $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases.
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.13 percentage points, from 25.49\% to 26.62\%. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
+A complementary ablation removes association verification altogether: no geometric gate $\delta_{rj}\le g_0+g_1z_{rj}^-$, no $\alpha_{\min}$, and $\alpha_{rj}$ reduced to its incidence factor $|\cos\phi_{rj}|$. Every valid projected depth sample is then a candidate, each vertex keeps its 15 most frontal ones, Stages~2--4 are unchanged, and the targets are still the measured samples. Table~\ref{tab:reply-association-gates} compares this variant with the default on the same ten cases. Verification raises mean F@25 by 1.13 percentage points, from 25.49\% to 26.62\%; per case, removing it changes F@25 by $-13.1$ to $+2.0$ percentage points. Without verification, the targets fall below the nearest-keyframe baseline in Table~IV (25.98\%); this ablation therefore isolates the benefit of the observation-derived targets requested in E2 and discussed in R1-3(a).
 
 {\small
 \begin{longtable}{lrrrr}
@@ -687,7 +692,7 @@ RGB-D depth images and spherical LiDAR range images, as specified after the subm
 
 \point{R2-B1}{What kind of spatial indexing scheme allows storing/retrieving visibility relationship between vertices and sensors?}
 \begin{reply}
-A $k$-d tree (RGB-D) or grid (LiDAR) retrieves nearby keyframe centres under the pre-correction poses, within 14.7\,m or 80\,m, respectively. Projection and geometric verification establish the vertex--measurement associations (Sec.~III-B); the index retrieves spatial candidates.
+A $k$-d tree (RGB-D) or grid (LiDAR) retrieves nearby keyframe centres under the pre-correction poses, within 14.3--14.7\,m (the 10\,m viewing frustum, depending on camera intrinsics) or 80\,m, respectively. Projection and geometric verification establish the vertex--measurement associations (Sec.~III-B); the index retrieves spatial candidates.
 \end{reply}
 
 \point{R2-B2}{What does it mean to "sample the projected depth"? Do you mean get the closest?}
@@ -724,12 +729,12 @@ $m_{rj}\in\mathbb R^3$ is the sampled sensor-frame point returned by $\mathcal S
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
 \begin{reply}
-For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. If no candidate has a valid corrected pose, the target remains at the source position, $v_j^*=v_j^-$ (Sec.~III-C).
+For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. If no candidate has a valid corrected pose ($\mathcal J_j=\emptyset$), the vertex is treated as unobserved: it receives no target and follows the Stage-3 deformation, so it does not pin the surface (Sec.~III-C).
 \end{reply}
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-An observed vertex has at least one retained observation ($\mathcal O_j\neq\emptyset$); it yields one target $v_j^*$ and becomes a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
+An observed vertex has at least one retained observation with a valid corrected pose ($\mathcal J_j\neq\emptyset$); it yields one target $v_j^*$ and becomes a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
 \end{reply}
 
 \subsection*{Sec. III-D}
@@ -899,7 +904,7 @@ A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set
 
 \point{R2-E11}{What makes a source face valid or invalid?}
 \begin{reply}
-The closest source face must lie within $16s$ of the free-space group's mean centre, and both it and its warped copy must be nondegenerate so that the paired frames can be constructed (Sec.~III-E).
+Each transport cell takes the source face closest to the centroid of its observed voxels; there is no distance limit. The face is valid if neither it nor its warped copy is degenerate, so that the paired frames of Eq.~(21) can be constructed; a cell whose closest face is invalid is not transported (Sec.~III-E).
 \end{reply}
 
 \subsection*{Sec. III-F}
@@ -1007,6 +1012,9 @@ A L2 & +0.47 & +0.33 & -0.80 & 84.90 & 78.34 & 98.63 & 95.44 \\
 A L1 & +0.29 & -0.31 & -1.38 & 88.98 & 87.94 & 99.16 & 96.20 \\
 B L1$\to$L2 & +0.19 & -0.30 & -0.88 & 91.49 & 90.35 & 99.35 & 97.02 \\
 A L2 & +0.03 & -0.46 & -1.04 & 83.17 & 77.91 & 98.14 & 93.60 \\
+\midrule
+Mean A ($n=15$) & +0.40 & +0.36 & +0.23 & 83.45 & 80.09 & 97.28 & 92.19 \\
+Mean B ($n=10$) & +0.00 & -0.01 & -0.10 & 88.29 & 86.54 & 98.03 & 94.39 \\
 \end{longtable}
 \endgroup
 \end{document}
