@@ -58,7 +58,7 @@ Algorithm 1 in Section III-D now gives the execution order of filtering, target 
 Please add a matched multi-keyframe pose-transport baseline. Keep the candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing unchanged. Instead of constructing each candidate target from the matched range sample as in Eq. (3), apply the corresponding keyframe's pre-to-post pose correction to the original source vertex, then aggregate the candidates. Paired results for the individual ablation cases would show how consistently the measured-sample formulation improves on this control.}
 \begin{reply}
 \textbf{Matched comparison.}
-We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation achieves mean F@10/F@25/F@50 scores of $10.16/26.62/45.41\%$, compared with $10.04/26.55/45.39\%$ for matched pose transport. Table~\ref{tab:reply-r1a-paired} gives all ten paired differences; F@25 increases in nine cases.
+We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation achieves mean F@10/F@25/F@50 scores of $10.16/26.62/45.40\%$, compared with $10.04/26.54/45.39\%$ for matched pose transport. Table~\ref{tab:reply-r1a-paired} gives all ten paired differences; F@25 increases in nine cases.
 
 {\small
 \begin{longtable}{lrrr}
@@ -162,7 +162,7 @@ $\alpha_{\min}:0.05\to0.20$ & $-0.190$ & $[-0.52,0.00]$ & $+0.06$\\\bottomrule
 The same experiment varies the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings. Across the tested Stage-3 settings, mean F@25 changes by $-0.021$ to $+0.046$ percentage points; the stricter association-reliability cutoff has the larger effect on these cases.
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.11 percentage points, from 25.54\% to 26.62\%. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
+A complementary ablation removes all Stage-1 association gates while retaining the downstream pipeline. Table~\ref{tab:reply-association-gates} compares this variant with its default on the same ten cases. Geometric verification raises mean F@25 by 1.13 percentage points, from 25.49\% to 26.62\%. These results demonstrate the role of observation screening in establishing the surface-to-keyframe constraints used for correction.
 
 {\small
 \begin{longtable}{lrrrr}
@@ -170,8 +170,8 @@ A complementary ablation removes all Stage-1 association gates while retaining t
 \toprule
 Association setting & F@10 (\%) & F@25 (\%) & F@50 (\%) & CD\\
 \midrule
-Geometrically verified (default) & 10.16 & 26.62 & 45.54 & 101.7\\
-All association gates removed & 8.93 & 25.49 & 45.40 & 103.8\\
+Geometrically verified (default) & 10.16 & 26.62 & 45.40 & 101.7\\
+All association gates removed & 8.93 & 25.49 & 45.29 & 103.8\\
 \bottomrule
 \end{longtable}
 }
