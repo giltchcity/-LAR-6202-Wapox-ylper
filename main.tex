@@ -34,7 +34,7 @@ Thank you for the detailed comments. We have rewritten the Method section and co
 The Editor's report is grouped into the four requests below.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
 \begin{reply}
-Section III now defines the association weights, target construction, control selection, and TSDF reconstruction rules. The parameter table identifies fixed and modality-dependent settings; Algorithm 1 orders the Stage-3 steps. Figure~\ref{fig:reply-mechanisms}, also added to the Method, illustrates association, component-aware clustering, and output support. R1-3(c) reports threshold sensitivity.
+Section III now defines the association weights, target construction, control selection, and TSDF reconstruction rules. The parameter table lists all settings, which are fixed within each modality across datasets and sequences; Algorithm 1 orders the Stage-3 steps. Figure~\ref{fig:reply-mechanisms}, also added to the Method, illustrates association, component-aware clustering, and output support. R1-3(c) reports threshold sensitivity.
 \end{reply}
 \point{Editor E2: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
@@ -42,7 +42,7 @@ In WarpVox, the measurements decide which keyframes support each vertex and with
 \end{reply}
 \point{Editor E3: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
-We evaluated five multi-loop sequences through 15 corrections, with checkpoints immediately after correction and after continued fusion. R1-3(b) reports the surface-score differences from reintegration and the four original volumetric-consistency metrics at all 25 checkpoints.
+We evaluated five multi-loop sequences through 15 corrections, with checkpoints immediately after correction and after continued fusion. Surface accuracy stays on par with reintegration, with mean $\Delta F@25$ of $+0.36$\,pp after correction and $-0.01$\,pp after continued fusion, and continued fusion improves all four volumetric-consistency metrics in every interval. R1-3(b) reports all 25 checkpoints.
 \end{reply}
 \point{Editor E4: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
@@ -100,7 +100,7 @@ q_{rj}^{\mathrm{pose}} &= \widehat R_r^+\hat v_{rj}^-+\widehat t_r^+,\\
 &=\bigl\|\widehat R_r^+(m_{rj}-\hat v_{rj}^-)\bigr\|=\delta_{rj}\le g_0+g_1z_{rj}^-,
 \end{aligned}
 \]
-where $(\widehat R_r^+,\widehat t_r^+)$ is the corrected keyframe pose. The two candidates thus differ only by the association residual that Stage~1 has already bounded; for RGB-D the bound is at most 0.18\,m over the 10\,m association range, within one 0.25\,m voxel. The small, consistent gain of the measured-sample targets in Table~\ref{tab:reply-r1a-paired} agrees with this bound.
+where $(\widehat R_r^+,\widehat t_r^+)$ is the corrected keyframe pose. The two candidates thus differ only by the association residual that Stage~1 has already bounded; for RGB-D the bound is at most 0.18\,m over the 10\,m association range, within one 0.25\,m voxel. This bound explains the scale of the differences in Table~\ref{tab:reply-r1a-paired}, where the measured-sample targets score higher in eight of the ten cases.
 
 \textbf{Where the benefit of the observation-derived targets appears.}
 Because the measurements decide which keyframes are combined and with what weight, the benefit of combining several keyframes is tested by varying this support. On the same ten cases, WarpVox reaches 26.62\% at F@25, and Nearest-KF (Table~IV), which corrects each control with its spatially nearest keyframe and uses no observations, reaches 25.98\%. The association ablation in R1-3(c) still combines the measured samples of up to 15 keyframes per vertex but no longer checks them against the source surface, and reaches 25.49\%, below even the nearest-keyframe baseline. With verification, the same combination improves on Nearest-KF by 0.64 percentage points. The benefit therefore comes from the Stage-1 verification of which measurements support each vertex, and Stage~2 converts this verified support into the target. These components serve WarpVox's system contribution: correcting an already fused TSDF from trajectory updates and restoring the volumetric state needed for continued fusion.
@@ -202,7 +202,7 @@ ElasticFusion derives deformation constraints from local and global surface regi
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
-The requested ElasticFusion experiments are here: evaluate its complete surfel SLAM system on TUM fr3/long\_office\_household and ten Kimera-Multi sequences, complementing the controlled comparison with Kimera-PGMO in Table III (R2-S2). Because ElasticFusion's deformation constraints come from its own registration, it runs with its own tracking and loop closure, as in its published evaluation; WarpVox and Voxblox reintegration use ORB-SLAM3 poses. Reintegration, which fuses the same measurements under the corrected poses, serves as the native-TSDF reference.
+The requested ElasticFusion experiments evaluate its complete surfel SLAM system on TUM fr3/long\_office\_household and ten Kimera-Multi sequences, complementing the controlled comparison with Kimera-PGMO in Table III (R2-S2). Because ElasticFusion's deformation constraints come from its own registration, it runs with its own tracking and loop closure, as in its published evaluation; WarpVox and Voxblox reintegration use ORB-SLAM3 poses. Reintegration, which fuses the same measurements under the corrected poses, serves as the native-TSDF reference.
 
 TUM is ElasticFusion's own benchmark setting. Our EF setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the \href{https://www.thomaswhelan.ie/Whelan16ijrr.pdf}{ElasticFusion paper}; ORB-SLAM3 reaches 1.01\,cm. Against a reference reconstructed from RGB-D measurements with motion-capture poses, WarpVox leads ElasticFusion at every F-score threshold (1, 2, and 5\,cm) and in Chamfer distance:
 \begin{center}\small
@@ -775,7 +775,7 @@ Fragments have fewer than $N_{\rm f}=100$ faces. Control-free fragments are remo
 
 \point{R2-D7}{Constraints were not yet defined here, yet there are descriptions of "receiving robust motion constraints"}
 \begin{reply}
-The control displacement $d_j=v_j^*-v_j^-$ is already defined in the submitted Section III-D. The revision explicitly identifies it as a prescribed vertex displacement before introducing synthetic controls.
+The constraint is the control displacement $d_j=v_j^*-v_j^-$, a prescribed vertex displacement; the revision defines it in Section III-D before introducing synthetic controls.
 \end{reply}
 
 \point{R2-D8}{What does "QEM" stand for?}
@@ -853,7 +853,7 @@ Surface-local reconstruction processes voxel centres within truncation distance 
 
 \point{R2-E2}{The first paragraph says the "sign orientation" comes from the source mesh, whereas Eq. 12 claims it is "determined separately from the source field".}
 \begin{reply}
-The submitted Stage-4 opening already identifies the source TSDF as providing sign orientation. The mesh normal defines geometric orientation; valid source-field samples establish which side is positive free space. Equation (19) states this rule and its fallbacks explicitly.
+The source TSDF provides the sign orientation: the mesh normal defines geometric orientation, and valid source-field samples establish which side is positive free space. The revised Stage-4 opening and Eq.~(19) state this rule and its fallbacks explicitly.
 \end{reply}
 
 \point{R2-E3}{What does "weight provides support" mean?}
@@ -934,7 +934,7 @@ Voxblox reintegration & 101.9 & 67.3\\
 WarpVox & 103.1 & 68.8\\\bottomrule
 \end{tabular}
 \end{center}
-On the ten-sequence corrected-surface comparison, CD is 309.6\,cm for the input mesh, 183.8\,cm for online Kimera-PGMO, 179.0\,cm for Kimera-PGMO one-shot correction, and 152.9\,cm for WarpVox. WarpVox reduces CD by 26.1\,cm relative to one-shot PGMO under shared inputs.
+WarpVox stays within 1.5\,cm of reintegration on both datasets and below every other correction baseline. On the ten-sequence corrected-surface comparison (Table III), CD is 309.6\,cm for the input mesh, 179.0\,cm for Kimera-PGMO one-shot correction, the stronger of its two modes (183.8\,cm online), and 152.9\,cm for WarpVox. WarpVox reduces CD by 26.1\,cm relative to one-shot PGMO under shared inputs.
 \end{reply}
 
 \point{R2-IVA3}{Table II shows inconsistent relative portions between different datasets. Please discuss why some datasets incur larger time in, e.g., association, whereas other datasets incur larger time in target estimation.}
