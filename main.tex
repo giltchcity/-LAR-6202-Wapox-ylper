@@ -199,7 +199,7 @@ ElasticFusion derives deformation constraints from local and global surface regi
 \begin{reply}
 We agree that WarpVox should also be compared with surface-deformation methods. ElasticFusion represents the methods that the reviewer asks about, and the submitted Section IV-C already compares WarpVox with a more recent representative of this class, Kimera-PGMO, which also uses an embedded deformation graph, on the same input mesh and trajectories (Table III, R2-S2). As requested, we additionally ran ElasticFusion, as in its published evaluation, on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. Reintegration, which fuses the same measurements under the corrected poses, serves as the native-TSDF reference.
 
-TUM is ElasticFusion's own benchmark setting. Our EF setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the ElasticFusion paper. Against a reference reconstructed from RGB-D measurements with motion-capture poses, WarpVox leads ElasticFusion at every F-score threshold (1, 2, and 5\,cm) and in Chamfer distance:
+TUM is ElasticFusion's own benchmark setting. Our ElasticFusion setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the ElasticFusion paper. Against a reference reconstructed from RGB-D measurements with motion-capture poses, WarpVox leads ElasticFusion at every F-score threshold (1, 2, and 5\,cm) and in Chamfer distance:
 \begin{center}\small
 \begin{tabular}{lrrrr}\toprule
 Method & F@1 (\%) & F@2 (\%) & F@5 (\%) & CD (cm)\\\midrule
