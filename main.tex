@@ -718,12 +718,12 @@ $m_{rj}\in\mathbb R^3$ is the sampled sensor-frame point returned by $\mathcal S
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
 \begin{reply}
-For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. If no candidate has a valid corrected pose ($\mathcal J_j=\emptyset$), the vertex is treated as unobserved: it receives no target and follows the Stage-3 deformation, so it does not pin the surface (Sec.~III-C).
+For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. $\mathcal J_j$ is empty only when none of the vertex's observations has a corrected pose, i.e., all its keyframes fall outside the corrected trajectory or within an interpolation gap above three times the median spacing. Eq.~(7) then sets $v_j^*=v_j^-$, a zero-displacement control that goes through the Stage-3 outlier test of Eq.~(9) like any other (Sec.~III-C).
 \end{reply}
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-An observed vertex has at least one retained observation with a valid corrected pose ($\mathcal J_j\neq\emptyset$); it yields one target $v_j^*$ and becomes a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
+A supported (observed) vertex has at least one retained observation, $\mathcal O_j\neq\emptyset$ (Sec.~III-B); Stage~2 turns its observations into one target $v_j^*$ (Eq.~(7)), which makes it a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
 \end{reply}
 
 \subsection*{Sec. III-D}
@@ -770,7 +770,7 @@ Fragments have fewer than $N_{\rm f}=100$ faces. Control-free fragments are remo
 
 \point{R2-D7}{Constraints were not yet defined here, yet there are descriptions of "receiving robust motion constraints"}
 \begin{reply}
-The constraint is the control displacement $d_j=v_j^*-v_j^-$, a prescribed vertex displacement; the revision defines it in Section III-D before introducing synthetic controls.
+The constraint is the control displacement $d_j=v_j^*-v_j^-$, a prescribed vertex displacement; the revision defines it at the end of Stage~2 (Section III-C), before Stage~3 introduces synthetic controls.
 \end{reply}
 
 \point{R2-D8}{What does "QEM" stand for?}
