@@ -131,9 +131,9 @@ handles = [Line2D([0], [0], color="#4a3aa7", lw=0.8, alpha=0.5),
            Line2D([0], [0], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)))]
 handles += [Line2D([0], [0], color=c, lw=1.0, marker=m, markersize=3, markeredgewidth=0) for _, _, c, m in METRICS]
 names = [r"$\Delta$F@10", r"$\Delta$F@25", r"$\Delta$F@50"] + [m[0] for m in METRICS]
-fig.legend(handles, names, loc="lower center", ncol=7, frameon=False, fontsize=5.6,
-           bbox_to_anchor=(0.5, 0.0), handlelength=1.3, columnspacing=0.9, handletextpad=0.35)
+ax.legend(handles, names, loc="upper center", ncol=7, frameon=False, fontsize=5.6,
+           bbox_to_anchor=(0.5, -0.13), bbox_transform=ax.transAxes, handlelength=1.3, columnspacing=0.9, handletextpad=0.35)
 fig.subplots_adjust(left=0.075, right=0.93, top=0.84, bottom=0.235)
-fig.savefig(sys.argv[1])
+fig.savefig(sys.argv[1], bbox_inches="tight", pad_inches=0.015)
 if len(sys.argv) > 2:
-    fig.savefig(sys.argv[2], dpi=300)
+    fig.savefig(sys.argv[2], dpi=300, bbox_inches="tight", pad_inches=0.015)
