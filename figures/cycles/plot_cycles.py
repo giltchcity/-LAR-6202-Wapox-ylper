@@ -38,6 +38,13 @@ SEQ = [
         ("A2", -0.46, 83.17, 77.91, 98.14, 93.60)]),
 ]
 
+FUSION_S = {  # duration of each continued-fusion interval (s), in order of the B checkpoints
+    "1207_acl_jackal2": [290.62, 599.03],
+    "1207_hathor": [154.25, 8.96, 177.31, 1.44, 182.89],
+    "1207_sparkal1": [238.77],
+    "1208_acl_jackal2": [289.05],
+    "1208_apis": [206.08],
+}
 INK = "#0b0b0b"
 INK2 = "#52514e"
 GRID = "#e4e3df"
@@ -72,9 +79,12 @@ for name, rows in SEQ:
     x = [pos + i for i in range(len(rows))]
     labels = [r[0] for r in rows]
     isA = [l.startswith("A") for l in labels]
+    durs = iter(FUSION_S[name])
     for xi, a in zip(x, isA):
         if not a:
             axr.axvspan(xi - 0.5, xi + 0.5, color="#f0efec", lw=0, zorder=0)
+            ax.text(xi, 3, f"{next(durs):.2f} s", rotation=90, ha="center", va="bottom",
+                    fontsize=5.0, color=INK2, zorder=1)
     for mname, col, color, marker in METRICS:
         y = [rr[col] for rr in rows]
         ax.plot(x, y, color=color, lw=1.0, zorder=2)
