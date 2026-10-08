@@ -108,23 +108,21 @@ for name, rows in SEQ:
     ax.scatter([a for a, k in zip(x, isA) if k], [50 + 50 / 6 * b for b, k in zip(y, isA) if k], s=9, color=INK, lw=0, zorder=3)
     ax.scatter([a for a, k in zip(x, isA) if not k], [50 + 50 / 6 * b for b, k in zip(y, isA) if not k], s=9,
                facecolor="white", edgecolor=INK, lw=0.7, zorder=3)
-    d, r = name.split("_", 1)
-    ax.text((x[0] + x[-1]) / 2, 102, f"{r}\n{d}", ha="center", va="bottom", fontsize=6.0, color=INK, linespacing=1.1)
+    ax.text((x[0] + x[-1]) / 2, 102, name, ha="center", va="bottom", fontsize=5.6, color=INK)
     xt += x; xl += labels
     pos = x[-1] + 1 + GAP
 
 ax.axhline(50, color=INK2, lw=0.6, ls=(0, (3, 2)), zorder=1)
 # left axis: volumetric metrics, 0-100 %
 ax.set_ylim(0, 100); ax.set_yticks([0, 50, 100])
-ax.set_ylabel("Volumetric metrics (%)", color=INK)
+ax.set_ylabel("Volumetric metrics (%)", color=INK, labelpad=1)
 # right axis: dF@25, aligned so that 0 pp sits on the 25 % grid line (1 pp = 5 %)
 axr.set_ylim(-6, 6)
 axr.set_yticks([-6, 0, 6])
 
-axr.set_ylabel(r"$\Delta$F (pp)", color=INK)
-axr.yaxis.set_label_coords(1.045, 0.5)
+axr.set_ylabel(r"$\Delta$F (pp)", color=INK, labelpad=1)
 ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=5.6)
-ax.set_xlim(-0.6, xt[-1] + 0.6)
+ax.set_xlim(-0.25, xt[-1] + 0.25)
 
 handles = [Line2D([0], [0], color="#4a3aa7", lw=0.8, alpha=0.5),
            Line2D([0], [0], color=INK, lw=1.0, marker="o", markersize=3, markeredgewidth=0),
