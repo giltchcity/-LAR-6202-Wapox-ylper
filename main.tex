@@ -218,7 +218,7 @@ Voxblox reintegration & 8.18 & 24.29 & 44.13 & 1.03\\
 WarpVox & 8.16 & 23.68 & 43.18 & 1.04\\\bottomrule
 \end{tabular}
 \end{center}
-ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m on these sequences, which accounts for its scores, while WarpVox stays close to reintegration. This reflects the distinction in R2-S2: ElasticFusion corrects its map through its own registrations, whereas WarpVox applies trajectory corrections from an external SLAM back-end.
+The two datasets show where each design fits. On TUM, the room-scale setting ElasticFusion was built for, its own tracking performs as published, and WarpVox still leads at every threshold. On the larger Kimera-Multi sequences, ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m, which accounts for its scores, while WarpVox stays close to reintegration. This reflects the distinction in R2-S2: ElasticFusion corrects its map only through the registrations it computes itself, whereas WarpVox applies the corrections of the SLAM back-end the system uses, here ORB-SLAM3 (Table~I) and Kimera-PGMO's optimized trajectory (Table~III), to RGB-D and LiDAR maps alike. As mapping data grow in scale and sensing, this lets the map follow the back-end best suited to the data.
 \end{reply}
 \subsection*{General}
 
