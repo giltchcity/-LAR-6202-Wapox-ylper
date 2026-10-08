@@ -42,7 +42,7 @@ WarpVox differs from existing deformation-based approaches in where the correcti
 \end{reply}
 \point{Editor E3: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
-The observation-derived targets, the final targets of Eq.~(7), are produced by Stages~1 and~2 together. Just as the TSDF is formed from the joint contribution of the keyframes that observed it, Stage~1 aims to recover and weight the keyframe measurements that observed each vertex, and Stage~2 places them under the corrected poses and aggregates them; the measured-sample construction of Eq.~(4) (Eq.~(3) in the submission) is one step of this construction. Table~IV, which replaces both stages with nearest-keyframe pose transport, isolates their benefit: 0.637 percentage points at F@25. The matched baseline requested in R1-3(a) replaces only Eq.~(4) and performs on par with WarpVox, while removing the Stage-1 gate and reliability screening drops F@25 below nearest-keyframe transport (R1-3(c)); the gain comes from recovering, screening, weighting, and combining the measurements of several keyframes in Stages~1--2.
+The observation-derived targets, the final targets of Eq.~(4), are produced by Stages~1 and~2 together. Just as the TSDF is formed from the joint contribution of the keyframes that observed it, Stage~1 aims to recover and weight the keyframe measurements that observed each vertex, and Stage~2 places them under the corrected poses and aggregates them; the measured-sample construction of Eq.~(3) is one step of this construction. Table~IV, which replaces both stages with nearest-keyframe pose transport, isolates their benefit: 0.637 percentage points at F@25. The matched baseline requested in R1-3(a) replaces only Eq.~(3) and performs on par with WarpVox, while removing the Stage-1 gate and reliability screening drops F@25 below nearest-keyframe transport (R1-3(c)); the gain comes from recovering, screening, weighting, and combining the measurements of several keyframes in Stages~1--2.
 \end{reply}
 \point{Editor E4: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
@@ -57,7 +57,7 @@ Algorithm 1 in Section III-D now gives the execution order of filtering, target 
 
 Please add a matched multi-keyframe pose-transport baseline. Keep the candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing unchanged. Instead of constructing each candidate target from the matched range sample as in Eq. (3), apply the corresponding keyframe's pre-to-post pose correction to the original source vertex, then aggregate the candidates. Paired results for the individual ablation cases would show how consistently the measured-sample formulation improves on this control.}
 \begin{reply}
-We agree that Table~IV alone does not separate the steps inside the target construction. Table~IV compares the observation-derived target of Eq.~(7), the output of Stages~1 and~2 together, with nearest-keyframe pose transport, and its 0.637-percentage-point gain is the gain of this target. Stages~1 and~2 trace TSDF fusion backwards. Fusion forms the surface at a vertex as a weighted combination of the measurements that observed it; Stage~1 recovers these measurements by projective association, keeps those consistent with the surface by the geometric gate, and weights them by reliability, and Stage~2 places them under the corrected poses with Eq.~(4) (Eq.~(3) in the submission) and combines them by the trimmed weighted mean of Eqs.~(5)--(7). The two factors named in the review are steps of this construction. The requested baseline replaces the measured samples of Eq.~(4) with pose transport and performs on par, so this step is equivalent to pose transport up to the gated residual. Combining several keyframes improves the target only after screening: removing the gate and reliability screening drops F@25 from 26.62\% to 25.49\%, below the 25.98\% of nearest-keyframe transport, while the gate, cutoff, and trimming settings change mean F@25 by at most 0.19\,pp (R1-3(c)). The gain comes from the full construction: recovering, screening, weighting, and combining the measurements of several keyframes, the steps that formed the surface during fusion.
+We agree that Table~IV alone does not separate the steps inside the target construction. Table~IV compares the observation-derived target of Eq.~(4), the output of Stages~1 and~2 together, with nearest-keyframe pose transport, and its 0.637-percentage-point gain is the gain of this target. Stages~1 and~2 trace TSDF fusion backwards. Fusion forms the surface at a vertex as a weighted combination of the measurements that observed it; Stage~1 recovers these measurements by projective association, keeps those consistent with the surface by the geometric gate, and weights them by reliability, and Stage~2 places them under the corrected poses with Eq.~(3) and combines them by the trimmed weighted mean of Eq.~(4). The two factors named in the review are steps of this construction. The requested baseline replaces the measured samples of Eq.~(3) with pose transport and performs on par, so this step is equivalent to pose transport up to the gated residual. Combining several keyframes improves the target only after screening: removing the gate and reliability screening drops F@25 from 26.62\% to 25.49\%, below the 25.98\% of nearest-keyframe transport, while the gate, cutoff, and trimming settings change mean F@25 by at most 0.19\,pp (R1-3(c)). The gain comes from the full construction: recovering, screening, weighting, and combining the measurements of several keyframes, the steps that formed the surface during fusion.
 
 \textbf{Matched comparison.}
 We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. Table~\ref{tab:reply-r1a-paired} gives the ten paired F@25 differences. The measured-sample formulation improves F@25 by 0.042 percentage points on average and in eight of the ten cases.
@@ -114,7 +114,7 @@ As the review states, exact equivalence with reintegration is not required. Over
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
-We agree that a compact table makes these settings reproducible; the revised Section III now includes it. The association reliability is defined in Section III-B and reproduced in R2-B3. Section III-C specifies the aggregation weights and trimming rule (Eqs.~(5)--(7) in the revision). The fixed settings include the following:
+We agree that a compact table makes these settings reproducible; the revised Section III now includes it. The association reliability is defined in Section III-B and reproduced in R2-B3. Section III-C specifies the aggregation weights and trimming rule (Eq.~(4) in the revision). The fixed settings include the following:
 \begin{center}\small
 \begin{tabular}{p{0.37\linewidth}p{0.55\linewidth}}\toprule
 Quantity & Setting\\\midrule
@@ -144,7 +144,7 @@ For observation $r$ of vertex $j$, the aggregation weight is
 \alpha_{rj}/(1+\|q_{rj}^+-v_j^-\|/\zeta_m), & \text{LiDAR},
 \end{cases}
 \]
-where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean, which gives the observation-derived target $v_j^*$ of Eq.~(7). With fewer than three valid samples, all are retained. R2-D3--D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
+where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean, which gives the observation-derived target $v_j^*$ of Eq.~(4). With fewer than three valid samples, all are retained. R2-D3--D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
 
 We tested the RGB-D association gate and reliability cutoff on ten ablation cases, changing one setting at a time. The fixed setting reaches a mean F@25 of 26.62\%. The paired changes are:
 \begin{center}\small
@@ -718,12 +718,12 @@ $m_{rj}\in\mathbb R^3$ is the sampled sensor-frame point returned by $\mathcal S
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
 \begin{reply}
-For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. $\mathcal J_j$ is empty only when none of the vertex's observations has a corrected pose, i.e., all its keyframes fall outside the corrected trajectory or within an interpolation gap above three times the median spacing. Eq.~(7) then sets $v_j^*=v_j^-$, a zero-displacement control that goes through the Stage-3 outlier test of Eq.~(9) like any other (Sec.~III-C).
+For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. $\mathcal J_j$ is empty only when none of the vertex's observations has a corrected pose, i.e., all its keyframes fall outside the corrected trajectory or within an interpolation gap above three times the median spacing. Eq.~(4) then sets $v_j^*=v_j^-$, a zero-displacement control that goes through the Stage-3 outlier test (Sec.~III-D(a)) like any other (Sec.~III-C).
 \end{reply}
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-A supported (observed) vertex has at least one retained observation, $\mathcal O_j\neq\emptyset$ (Sec.~III-B); Stage~2 turns its observations into one target $v_j^*$ (Eq.~(7)), which makes it a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
+A supported (observed) vertex has at least one retained observation, $\mathcal O_j\neq\emptyset$ (Sec.~III-B); Stage~2 turns its observations into one target $v_j^*$ (Eq.~(4)), which makes it a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
 \end{reply}
 
 \subsection*{Sec. III-D}
@@ -740,7 +740,7 @@ These are connected components of the triangle mesh: vertices connected through 
 
 \point{R2-D3}{What does "component-restricted inverse-distance predictor" do? I.e. what significance does connectivity have in predicting inverse distance?}
 \begin{reply}
-It predicts displacement from neighbouring controls using inverse-squared-distance weights. Preferring neighbours on the same mesh component separates nearby surface copies caused by drift that may require different corrections (Sec.~III-D(a), Eq.~(8)).
+It predicts displacement from neighbouring controls using inverse-squared-distance weights. Preferring neighbours on the same mesh component separates nearby surface copies caused by drift that may require different corrections (Sec.~III-D(a)).
 \end{reply}
 
 \point{R2-D4}{What is a "median - MAD residual test"? Residual between what? What is MAD?}
@@ -755,12 +755,12 @@ A control is rejected when
 \[
 e_j>\mu+1.5\max(1.4826\,\mathrm{MAD},0.05\,\mathrm{m}).
 \]
-Here MAD is the median absolute deviation; Eq.~(9), the parameter table, and Algorithm 1 specify the test, settings, and execution order.
+Here MAD is the median absolute deviation; Section III-D(a), the parameter table, and Algorithm 1 specify the test, settings, and execution order.
 \end{reply}
 
 \point{R2-D5}{What does "statistically isolated control" mean? Do you mean outliers?}
 \begin{reply}
-Yes---outlier controls. The revision uses ``outlier'' and gives the test in Eq.~(9).
+Yes---outlier controls. The revision uses ``outlier'' and gives the test in Section III-D(a).
 \end{reply}
 
 \point{R2-D6}{What is the difference between "omitted components" (due to being "supported only by rejected controls") and "Retained components without a surviving measured control"? I.e., how can components be retained without surviving "controls" if they are omitted?}
@@ -780,7 +780,7 @@ Quadric error metric (Garland and Heckbert, 1997), expanded in Sec.~III-D.
 
 \point{R2-D9}{Eq. 7: is this the "control" or the corrected proxy vertex position?}
 \begin{reply}
-The submitted Eq.~(7) defines the initial proxy target: the proxy rest position plus the average displacement of its clustered controls (revised Eq.~(10)).
+The submitted Eq.~(7) defines the initial proxy target: the proxy rest position plus the average displacement of its clustered controls (Section III-D(d) in the revision).
 \end{reply}
 
 \point{R2-D10}{What does "controlled proxy vertex" mean? How are vertices controlled/uncontrolled?}
@@ -790,12 +790,12 @@ A proxy vertex is controlled when it has an assigned target, from mapped control
 
 \point{R2-D11}{What does "only when it is a gross residual" mean? What does it mean for residuals to be a strict majority? What are the "synthetic targets"?}
 \begin{reply}
-A \emph{gross residual} satisfies $r_a=\|p_a^{(0)}-\hat p_a\|\ge4.685\sigma_a$, where $\hat p_a$ is the local rigid prediction and $\sigma_a$ the robust fitting scale. A \emph{strict majority} means more than half the fitted measured targets in that component are gross. \emph{Synthetic targets} are assigned to anchor components without measured controls. Section III-D(d), Eq.~(11), specifies their update rule.
+A \emph{gross residual} satisfies $r_a=\|p_a^{(0)}-\hat p_a\|\ge4.685\sigma_a$, where $\hat p_a$ is the local rigid prediction and $\sigma_a$ the robust fitting scale. A \emph{strict majority} means more than half the fitted measured targets in that component are gross. \emph{Synthetic targets} are assigned to anchor components without measured controls. Section III-D(d), Eq.~(5), specifies their update rule.
 \end{reply}
 
 \point{R2-D12}{Eq. 8: p\_\{a\}\textasciicircum{}\{+\} and p\_b\textasciicircum{}\{+\} are not defined. Should these be p\_\{a\}\textasciicircum{}\{\textbackslash{}star\}? What is P\textasciicircum{}+? Why is it an optimization variable?}
 \begin{reply}
-$P^+=\{p_a^+\}$ are the deformed proxy positions. The targets $p_a^*$ prescribe the controlled positions; the remaining positions are optimized by ARAP. Section III-D(e) now defines both before Eq.~(12).
+$P^+=\{p_a^+\}$ are the deformed proxy positions. The targets $p_a^*$ prescribe the controlled positions; the remaining positions are optimized by ARAP. Section III-D(e) now defines both before Eq.~(6).
 \end{reply}
 
 \point{R2-D13}{What does "proxy one-ring" mean?}
@@ -815,17 +815,17 @@ We solve on the 60K QEM proxy and transfer its displacements to the source mesh.
 
 \point{R2-D16}{What does "topology-local" mean?}
 \begin{reply}
-The interpolating triangle is selected from those incident to the vertex's own proxy vertex $\pi(j)$, keeping displacement transfer on the same connected surface (Sec.~III-D(f), Eq.~(13)).
+The interpolating triangle is selected from those incident to the vertex's own proxy vertex $\pi(j)$, keeping displacement transfer on the same connected surface (Sec.~III-D(f)).
 \end{reply}
 
 \point{R2-D17}{What does "star(\textbackslash{}pi(j))" mean?}
 \begin{reply}
-$\operatorname{star}_P(\pi(j))$ is the set of proxy triangles incident to $\pi(j)$ (Sec.~III-D (f), Eq.~(13)).
+$\operatorname{star}_P(\pi(j))$ is the set of proxy triangles incident to $\pi(j)$ (Sec.~III-D (f)).
 \end{reply}
 
 \point{R2-D18}{How are "edge-stretch, area-change or aspect-ratio bounds" defined mathematically?}
 \begin{reply}
-Equation (14) defines
+Section III-D(f) defines
 \[
 \xi^{\rm e}=\max_e\frac{\ell_e^+}{\ell_e^-},\qquad
 \xi^{\rm A}=\frac{A^+}{A^-},\qquad
@@ -848,32 +848,32 @@ Surface-local reconstruction processes voxel centres within truncation distance 
 
 \point{R2-E2}{The first paragraph says the "sign orientation" comes from the source mesh, whereas Eq. 12 claims it is "determined separately from the source field".}
 \begin{reply}
-The source TSDF provides the sign orientation: the mesh normal defines geometric orientation, and valid source-field samples establish which side is positive free space. The revised Stage-4 opening and Eq.~(19) state this rule and its fallbacks explicitly.
+The source TSDF provides the sign orientation: the mesh normal defines geometric orientation, and valid source-field samples establish which side is positive free space. The revised Stage-4 opening and Eq.~(9) state this rule and its fallbacks explicitly.
 \end{reply}
 
 \point{R2-E3}{What does "weight provides support" mean?}
 \begin{reply}
-Positive TSDF weight denotes observed support. Transferring this weight retains both that support and its integration strength for subsequent fusion (Sec.~III-E, Eq.~(18)).
+Positive TSDF weight denotes observed support. Transferring this weight retains both that support and its integration strength for subsequent fusion (Sec.~III-E, Eq.~(8)).
 \end{reply}
 
 \point{R2-E4}{What is the fallback branch?}
 \begin{reply}
-The fallback initializes voxels within $\rho=1.5s$ of the warped surface that have no transferred source weight. It uses the warped geometry and a prior weight in $[0,1]$, excluding open boundaries (Sec.~III-E, Eq.~(20)).
+The fallback initializes voxels within $\rho=1.5s$ of the warped surface that have no transferred source weight. It uses the warped geometry and a prior weight in $[0,1]$, excluding open boundaries (Sec.~III-E).
 \end{reply}
 
 \point{R2-E5}{What is a "consistent source sample"?}
 \begin{reply}
-A trilinear source sample is valid when every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent when those voxels also share the same nonzero distance sign. Section III-E defines the two tests before Eq.~(18).
+A trilinear source sample is valid when every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent when those voxels also share the same nonzero distance sign. Section III-E defines the two tests before Eq.~(8).
 \end{reply}
 
 \point{R2-E6}{What is the difference between w\_\{tr\}\textasciicircum{}+ and w\_\{src\}\textasciicircum{}+?}
 \begin{reply}
-The earlier $w_{\rm tr}^+$ duplicated $w_{\rm src}^+$ on the transferred-voxel set. We removed the redundant symbol and the former Eq.~(13). Equation (18) defines the source weight once, and Eq.~(22) uses it directly on $\Omega_{\rm tr}$.
+The earlier $w_{\rm tr}^+$ duplicated $w_{\rm src}^+$ on the transferred-voxel set. We removed the redundant symbol and the former Eq.~(13). Equation (8) defines the source weight once, and Eq.~(10) uses it directly on $\Omega_{\rm tr}$.
 \end{reply}
 
 \point{R2-E7}{How is n\_f\textasciicircum{}+ defined?}
 \begin{reply}
-$n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex order of $F$; Sec.~III-E also defines the paired frames built from it (Eq.~(16)).
+$n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex order of $F$; Sec.~III-E also defines the paired frames built from it (Eq.~(7)).
 \end{reply}
 
 \point{R2-E8}{How does the algorithm determine if the closest surface feature is an open boundary?}
@@ -883,7 +883,7 @@ Boundary edges are incident to exactly one face. The prior is withheld when the 
 
 \point{R2-E9}{What does "supported voxel" mean?}
 \begin{reply}
-A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(22)).
+A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(10)).
 \end{reply}
 
 \point{R2-E10}{What is a "fallback support"? What are "narrow samples"?}
@@ -893,7 +893,7 @@ A supported voxel has positive weight, $w>0$ (Sec.~III-A); $\Omega^+$ is the set
 
 \point{R2-E11}{What makes a source face valid or invalid?}
 \begin{reply}
-Each transport cell takes the source face closest to the centroid of its observed voxels; there is no distance limit. The face is valid if neither it nor its warped copy is degenerate, so that the paired frames of Eq.~(21) can be constructed; a cell whose closest face is invalid is not transported (Sec.~III-E).
+Each transport cell takes the source face closest to the centroid of its observed voxels; there is no distance limit. The face is valid if neither it nor its warped copy is degenerate, so that its paired frames can be constructed; a cell whose closest face is invalid is not transported (Sec.~III-E).
 \end{reply}
 
 \subsection*{Sec. III-F}
