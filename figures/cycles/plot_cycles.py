@@ -87,8 +87,6 @@ for name, rows in SEQ:
     x = [pos + i for i in range(len(rows))]
     labels = [r[0] for r in rows]
     isA = [l.startswith("A") for l in labels]
-    if pos > 0:   # thin divider between sequences
-        ax.axvline(x[0] - (1 + GAP) / 2, color=GRID, lw=0.8, zorder=0)
     durs = iter(FUSION_S[name])
     for xi, a in zip(x, isA):
         if not a:
