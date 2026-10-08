@@ -45,6 +45,14 @@ FUSION_S = {  # duration of each continued-fusion interval (s), in order of the 
     "1208_acl_jackal2": [289.05],
     "1208_apis": [206.08],
 }
+DF_10_50 = {  # (dF@10, dF@50) per checkpoint, from the former Table tab:reply-cycles
+    "1207_acl_jackal2": [(-0.20, 0.90), (-0.71, -0.32), (0.40, 1.72), (-0.90, -0.62), (-0.12, 0.05)],
+    "1207_hathor": [(1.54, 2.34), (0.79, 0.50), (1.23, 1.17), (0.83, 1.14), (0.24, 0.57), (0.29, 0.65),
+                    (0.73, 0.77), (0.82, 0.66), (0.25, 1.48), (-0.58, -0.11), (0.00, -1.28)],
+    "1207_sparkal1": [(0.10, -0.12), (-0.26, -0.37), (0.78, 0.82)],
+    "1208_acl_jackal2": [(0.29, -1.77), (-0.43, -1.67), (0.47, -0.80)],
+    "1208_apis": [(0.29, -1.38), (0.19, -0.88), (0.03, -1.04)],
+}
 INK = "#0b0b0b"
 INK2 = "#52514e"
 GRID = "#e4e3df"
@@ -92,6 +100,9 @@ for name, rows in SEQ:
                    color=color, lw=0, zorder=3)
         ax.scatter([a for a, k in zip(x, isA) if not k], [b for b, k in zip(y, isA) if not k], s=9,
                    marker=marker, facecolor="white", edgecolor=color, lw=0.7, zorder=3)
+    d10 = [v[0] for v in DF_10_50[name]]; d50 = [v[1] for v in DF_10_50[name]]
+    ax.plot(x, [50 + 50 / 6 * v for v in d10], color="#4a3aa7", lw=0.8, alpha=0.5, zorder=2)
+    ax.plot(x, [50 + 50 / 6 * v for v in d50], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)), zorder=2)
     y = [r[1] for r in rows]
     ax.plot(x, [50 + 50 / 6 * v for v in y], color=INK, lw=1.0, zorder=2)
     ax.scatter([a for a, k in zip(x, isA) if k], [50 + 50 / 6 * b for b, k in zip(y, isA) if k], s=9, color=INK, lw=0, zorder=3)
@@ -110,15 +121,17 @@ ax.set_ylabel("Volumetric metrics (%)", color=INK)
 axr.set_ylim(-6, 6)
 axr.set_yticks([-6, 0, 6])
 
-axr.set_ylabel(r"$\Delta$F@25 (pp)", color=INK)
+axr.set_ylabel(r"$\Delta$F (pp)", color=INK)
 axr.yaxis.set_label_coords(1.045, 0.5)
 ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=5.6)
 ax.set_xlim(-0.6, xt[-1] + 0.6)
 
-handles = [Line2D([0], [0], color=INK, lw=1.0, marker="o", markersize=3, markeredgewidth=0)]
+handles = [Line2D([0], [0], color="#4a3aa7", lw=0.8, alpha=0.5),
+           Line2D([0], [0], color=INK, lw=1.0, marker="o", markersize=3, markeredgewidth=0),
+           Line2D([0], [0], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)))]
 handles += [Line2D([0], [0], color=c, lw=1.0, marker=m, markersize=3, markeredgewidth=0) for _, _, c, m in METRICS]
-names = [r"$\Delta$F@25 (right axis)"] + [m[0] for m in METRICS]
-fig.legend(handles, names, loc="lower center", ncol=5, frameon=False, fontsize=5.8,
+names = [r"$\Delta$F@10", r"$\Delta$F@25", r"$\Delta$F@50"] + [m[0] for m in METRICS]
+fig.legend(handles, names, loc="lower center", ncol=7, frameon=False, fontsize=5.6,
            bbox_to_anchor=(0.5, 0.0), handlelength=1.3, columnspacing=0.9, handletextpad=0.35)
 fig.subplots_adjust(left=0.075, right=0.93, top=0.84, bottom=0.235)
 fig.savefig(sys.argv[1])
