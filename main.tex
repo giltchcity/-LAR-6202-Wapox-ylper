@@ -310,12 +310,12 @@ $m_{rj}\in\mathbb R^3$ is the sampled sensor-frame point returned by $\mathcal S
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
 \begin{reply}
-For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. $\mathcal J_j$ is empty only when none of the vertex's observations has a corrected pose, i.e., all its keyframes fall outside the corrected trajectory or within an interpolation gap above three times the median spacing. Eq.~(4) then sets $v_j^*=v_j^-$, a zero-displacement control that goes through the Stage-3 outlier test (Sec.~III-D(a)) like any other (Sec.~III-C).
+For a nonempty candidate set, the median-based threshold with $\kappa=2.5$ retains at least half the candidates. $\mathcal J_j$ is empty only when none of the vertex's observations has a corrected pose, i.e., all its keyframes fall outside the corrected trajectory or within an interpolation gap above three times the median spacing. Such a vertex is treated as unobserved: it receives no target and follows the Stage-3 deformation (Sec.~III-C).
 \end{reply}
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-A supported (observed) vertex has at least one retained observation, $\mathcal O_j\neq\emptyset$ (Sec.~III-B); Stage~2 turns its observations into one target $v_j^*$ (Eq.~(4)), which makes it a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
+A supported (observed) vertex has at least one retained observation with a corrected pose, $\mathcal O_j\neq\emptyset$ and $\mathcal J_j\neq\emptyset$ (Secs.~III-B and III-C); Stage~2 turns these observations into one target $v_j^*$ (Eq.~(4)), which makes it a measured control. Sections III-B to III-D use ``observed vertex'' for this condition.
 \end{reply}
 
 \subsection*{Sec. III-D}
