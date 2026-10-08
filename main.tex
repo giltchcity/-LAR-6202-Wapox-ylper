@@ -98,15 +98,16 @@ For keyframe $r$ and vertex $j$, the two candidates are $q^{\mathrm{meas}}_{rj}=
 \begin{reply}
 We evaluated the five multi-loop sequences of the ablation set, with two to six loop closures each and 15 corrections in total, recording checkpoints immediately after each correction (A, 15) and after continued fusion up to the next loop closure (B, 10, over 1.44--599.03\,s; Figure~\ref{fig:reply-cycles}). The reintegration reference uses the same measurement history and corrected poses.
 
+{\setlength{\intextsep}{4pt}\setlength{\abovecaptionskip}{3pt}\setlength{\belowcaptionskip}{0pt}%
 \begin{figure}[H]
 \centering
-\begin{minipage}{3.5in}% single-column width of the RA-L layout
+\begin{minipage}{3.5in}% single-column width of the RA-L layout, scaled proportionally
 \centering
 \includegraphics[width=\linewidth]{figures/cycles/reply_cycles.pdf}
 \caption{Repeated correction and continued fusion on five multi-loop sequences. Mean $\Delta F@25$ is $+0.36$\,pp after correction (A) and $-0.01$\,pp after continued fusion (B).}
 \label{fig:reply-cycles}
 \end{minipage}
-\end{figure}
+\end{figure}}
 
 The F-scores compare each map with the ground truth. On them, WarpVox stays close to full reintegration over repeated correction and continued fusion: the mean $\Delta F@25$ is $+0.36$\,pp at A and $-0.01$\,pp at B (F@10: $+0.40$ and $+0.00$; F@50: $+0.23$ and $-0.10$), and the per-event differences, from $-2.63$ to $+2.55$\,pp at A, rise in some sequences and fall in others, with no common trend over successive corrections.
 
