@@ -154,45 +154,47 @@ def save(fig, name):
 
 
 # ---------------------------------------------------------------- (a) association
-fig = new_figure(0.15, 7.75, 6.36, 9.47)
+# Compact layout: cameras closer in height so the figure is short and dense.
+fig = new_figure(0.15, 7.75, 6.80, 8.98)
 v = (4.05, 7.77)
-cams = [(.45, 8.94), (.45, 7.78), (.45, 6.57)]
+cams = [(.45, 8.52), (.45, 7.78), (.45, 7.03)]
 fractions = [.925, .92, .47]
 samples = [tuple(k[j] + f * (v[j] - k[j]) for j in (0, 1)) for k, f in zip(cams, fractions)]
-surface = [(4.17, 6.52), (3.98, 7.10), v, (4.22, 8.45), (4.13, 9.10)]
+surface = [(4.14, 6.88), (3.97, 7.34), v, (4.19, 8.26), (4.11, 8.86)]
 line(surface, "ink", 1.15)
 for i, (k, m) in enumerate(zip(cams, samples)):
     color = "blue" if i < 2 else "orange"
     line([k, v], "muted", .5, True)
     line([k, m], color, .85)
     camera(*k, v)
-    text(k[0] + .01, k[1] + .27, f"$K_{i+1}$", MATH)
+    text(k[0] + .01, k[1] + .25, f"$K_{i+1}$", MATH)
     if i < 2:
         circle(*m, .055, "blue", "blue", .3)
     else:
         cross(*m)
 circle(*v, .045, "ink", "ink", .4)
 text(v[0] + .22, v[1] - .12, r"$v_j^-$", MATH, "left")
-text(4.40, 9.20, r"$\mathcal{M}^-$", MATH, "left")
-text(samples[0][0] - .05, samples[0][1] + .26, r"$m_1$", MATH, color="blue")
-text(samples[1][0] - .10, samples[1][1] - .26, r"$m_2$", MATH, color="blue")
-text(samples[2][0] + .03, samples[2][1] - .27, r"$m_3$", MATH, color="orange")
-circle(5.12, 8.95, .05, "blue", "blue", .4)
-text(5.32, 8.95, "Retained observation", TXT, "left")
-cross(5.12, 8.55, .05)
-text(5.32, 8.55, "Rejected observation", TXT, "left")
-text(6.38, 7.80, r"$\delta_{rj}\leq g_0+g_1z_{rj}^-$", MATH)
-text(6.38, 7.06, "Old poses establish", NOTE, color="muted")
-text(6.38, 6.76, "observation support", NOTE, color="muted")
+text(4.36, 8.78, r"$\mathcal{M}^-$", MATH, "left")
+text(samples[0][0] - .10, samples[0][1] + .22, r"$m_1$", MATH, color="blue")
+text(samples[1][0] - .12, samples[1][1] - .24, r"$m_2$", MATH, color="blue")
+text(samples[2][0] + .03, samples[2][1] - .25, r"$m_3$", MATH, color="orange")
+circle(5.12, 8.70, .05, "blue", "blue", .4)
+text(5.32, 8.70, "Retained observation", TXT, "left")
+cross(5.12, 8.34, .05)
+text(5.32, 8.34, "Rejected observation", TXT, "left")
+text(6.38, 7.78, r"$\delta_{rj}\leq g_0+g_1z_{rj}^-$", MATH)
+text(6.38, 7.27, "Old poses establish", NOTE, color="muted")
+text(6.38, 6.99, "observation support", NOTE, color="muted")
 save(fig, "mech_assoc")
 
 # ---------------------------------------------------------------- (b) clustering
-fig = new_figure(8.25, 15.75, 6.10, 9.05)
+# The "(cell, component)" rule moves to the caption; labels sit outside the bands.
+fig = new_figure(8.25, 15.75, 6.52, 8.80)
 x0 = 8.43
-cx, cy, cw, ch = 9.72, 6.55, 2.02, 2.40
+cx, cy, cw, ch = 9.72, 6.60, 2.02, 2.12
 line([(cx, cy), (cx + cw, cy), (cx + cw, cy + ch), (cx, cy + ch), (cx, cy)], "muted", .65, True)
 xs = [.15, .79, 1.42, 2.00, 2.61, 3.22, 3.92, 4.65]
-for mid, color, phase, side in [(8.18, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
+for mid, color, phase, side in [(8.06, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
     upper = [(x0 + x, mid + .18 + .08 * math.sin(1.6 * x + phase)) for x in xs]
     lower = [(x0 + x, mid - .18 + .08 * math.sin(1.6 * x + phase)) for x in xs]
     polygon(upper + lower[::-1], "white", color, .55)
@@ -205,19 +207,17 @@ for mid, color, phase, side in [(8.18, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
     xp = cx + cw / 2
     yp = mid + .08 * math.sin(1.6 * (xp - x0) + phase)
     circle(xp, yp, .105, "white", color, 1.2)
-    # label outside the band: above component A, below component B
-    text(xp, yp + side * .44, r"$p_A^-$" if color == "blue" else r"$p_B^-$", MATH, color=color)
+    text(xp, yp + side * .43, r"$p_A^-$" if color == "blue" else r"$p_B^-$", MATH, color=color)
 lx = 13.80
-line([(lx - .13, 8.62), (lx + .13, 8.62)], "blue", 1.0)
-text(lx + .25, 8.62, "Component A", TXT, "left")
-line([(lx - .13, 8.20), (lx + .13, 8.20)], "teal", 1.0)
-text(lx + .25, 8.20, "Component B", TXT, "left")
-circle(lx, 7.78, .083, "white", "ink", 1)
-text(lx + .25, 7.78, "Proxy vertex", TXT, "left")
-line([(lx - .12, 7.24), (lx + .12, 7.24), (lx + .12, 7.48), (lx - .12, 7.48), (lx - .12, 7.24)],
+line([(lx - .13, 8.50), (lx + .13, 8.50)], "blue", 1.0)
+text(lx + .25, 8.50, "Component A", TXT, "left")
+line([(lx - .13, 8.08), (lx + .13, 8.08)], "teal", 1.0)
+text(lx + .25, 8.08, "Component B", TXT, "left")
+circle(lx, 7.66, .083, "white", "ink", 1)
+text(lx + .25, 7.66, "Proxy vertex", TXT, "left")
+line([(lx - .12, 7.12), (lx + .12, 7.12), (lx + .12, 7.36), (lx - .12, 7.36), (lx - .12, 7.12)],
      "muted", .6, True)
-text(lx + .25, 7.36, "Spatial cell", TXT, "left")
-text(12.0, 6.27, "One proxy vertex per (cell, component) pair", NOTE, color="muted")
+text(lx + .25, 7.24, "Spatial cell", TXT, "left")
 save(fig, "mech_cluster")
 
 # ---------------------------------------------------------------- (c) reconstruction
@@ -315,7 +315,7 @@ for sy in range(-8, 20):
         if not has_negative:
             classes[ix, iy] = "free"
 
-fig = new_figure(0.22, 10.12, 0.62, 5.66)
+fig = new_figure(0.22, 10.12, 0.93, 5.62)
 for iy in range(ny):
     for ix in range(snx):
         old = source_center(ix, iy)
@@ -367,15 +367,16 @@ text(qp[0] - .24, qp[1] - .24, r"$q^+$", MATH)
 text(x[0] + .17, x[1] - .15, r"$x$", MATH)
 text((qp[0] + x[0]) / 2, qp[1] + .24, r"$r$", MATH)
 mid_gap = (sgx + snx * s + tgx) / 2
-text(mid_gap, 3.36, "Paired surface", TXT)
-text(mid_gap, 3.06, "frames", TXT)
+text(mid_gap, 3.52, "Paired surface", TXT)
+text(mid_gap, 3.22, "frames", TXT)
 fb = (tgx + 6.5 * s, gy + 1.5 * s)
 fbm = pullback(fb)
 assert source_sample(fbm)[1] == 0 and abs(fb[0] - qp[0]) < rho
 bezier_arrow(fb, (6.0, 2.35), (3.4, 2.35), fbm, "orange", .65)
 circle(*fbm, .045, "white", "orange", .8)
 circle(*fb, .043, "orange", "orange", .4)
-text(mid_gap, 2.04, "No source weight", NOTE, color="orange")
+text(mid_gap, 2.88, "No source", NOTE, color="orange")
+text(mid_gap, 2.62, "weight", NOTE, color="orange")
 # band half-widths on one level: tau to the left of the surface, rho to the right
 ybar = 2.04
 for x1, x2, label in ((qp[0] - tau, qp[0], r"$\tau$"), (qp[0], qp[0] + rho, r"$\rho$")):
@@ -386,6 +387,6 @@ for x1, x2, label in ((qp[0] - tau, qp[0], r"$\tau$"), (qp[0], qp[0] + rho, r"$\
 swatch_legend([[("source", "Observed in source"), ("bluefill", "Transferred support"),
                 ("orangefill", "Geometric fallback")],
                [("tealfill", "Transported free space"), ("white", "Unobserved")]],
-              1.37, .22, 10.12, .38)
+              1.53, .22, 10.12, .36)
 save(fig, "mech_recon")
 print("Wrote mech_assoc, mech_cluster, mech_recon (.pdf, .png)")
