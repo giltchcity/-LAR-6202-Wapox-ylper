@@ -100,9 +100,12 @@ We evaluated the five multi-loop sequences of the ablation set, with two to six 
 
 \begin{figure}[H]
 \centering
+\begin{minipage}{3.5in}% single-column width of the RA-L layout
+\centering
 \includegraphics[width=\linewidth]{figures/cycles/reply_cycles.pdf}
 \caption{Repeated correction and continued fusion on five multi-loop sequences. Mean $\Delta F@25$ is $+0.36$\,pp after correction (A) and $-0.01$\,pp after continued fusion (B).}
 \label{fig:reply-cycles}
+\end{minipage}
 \end{figure}
 
 The F-scores compare each map with the ground truth. On them, WarpVox stays close to full reintegration over repeated correction and continued fusion: the mean $\Delta F@25$ is $+0.36$\,pp at A and $-0.01$\,pp at B (F@10: $+0.40$ and $+0.00$; F@50: $+0.23$ and $-0.10$), and the per-event differences, from $-2.63$ to $+2.55$\,pp at A, rise in some sequences and fall in others, with no common trend over successive corrections.

@@ -64,76 +64,82 @@ METRICS = [  # (name, column index, color, marker) -- validated categorical slot
 ]
 
 plt.rcParams.update({
-    "font.family": "DejaVu Sans", "font.size": 7, "axes.linewidth": 0.6,
+    "font.family": "DejaVu Sans", "font.size": 5.5, "axes.linewidth": 0.5,
     "axes.edgecolor": INK2, "xtick.color": INK2, "ytick.color": INK2,
     "xtick.major.width": 0.5, "ytick.major.width": 0.5,
-    "xtick.major.size": 2, "ytick.major.size": 2,
+    "xtick.major.size": 1.5, "ytick.major.size": 1.5, "xtick.major.pad": 1.5, "ytick.major.pad": 1.5,
     "pdf.fonttype": 42,
 })
 
 
-GAP = 0.45
-fig, ax = plt.subplots(figsize=(6.3, 1.85))
+# Single-column layout (RA-L column width 3.5 in)
+GAP = 0.3          # extra space between sequences, in checkpoint units
+FS = 5.0           # base font size
+fig, ax = plt.subplots(figsize=(3.5, 1.75))
 axr = ax.twinx()
 ax.set_zorder(axr.get_zorder() + 1); ax.patch.set_visible(False)
-ax.grid(axis="y", color=GRID, linewidth=0.5)
+ax.grid(axis="y", color=GRID, linewidth=0.4)
 ax.set_axisbelow(True)
 ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
 for sp in ("top", "left", "bottom"):
     axr.spines[sp].set_visible(False)
 
-xt, xl, pos, centers = [], [], 0.0, []
-for name, rows in SEQ:
+to_pct = lambda v: 50 + 50 / 6 * v   # dF axis: -6..6 pp aligned with 0..100 %
+xt, xl, pos = [], [], 0.0
+for g, (name, rows) in enumerate(SEQ):
     x = [pos + i for i in range(len(rows))]
     labels = [r[0] for r in rows]
     isA = [l.startswith("A") for l in labels]
+    if g > 0:   # thin divider between sequences
+        ax.axvline(x[0] - (1 + GAP) / 2, color=GRID, lw=0.6, zorder=0)
     durs = iter(FUSION_S[name])
     for xi, a in zip(x, isA):
         if not a:
             axr.axvspan(xi - 0.5, xi + 0.5, color="#f0efec", lw=0, zorder=0)
-            ax.text(xi, 3, f"{next(durs):.2f} s", rotation=90, ha="center", va="bottom",
-                    fontsize=5.0, color=INK2, zorder=1)
+            ax.text(xi, 2.5, f"{next(durs):.2f} s", rotation=90, ha="center", va="bottom",
+                    fontsize=FS - 1.0, color=INK2, zorder=1)
     for mname, col, color, marker in METRICS:
         y = [rr[col] for rr in rows]
-        ax.plot(x, y, color=color, lw=1.0, zorder=2)
-        ax.scatter([a for a, k in zip(x, isA) if k], [b for b, k in zip(y, isA) if k], s=9, marker=marker,
+        ax.plot(x, y, color=color, lw=0.8, zorder=2)
+        ax.scatter([a for a, k in zip(x, isA) if k], [b for b, k in zip(y, isA) if k], s=4, marker=marker,
                    color=color, lw=0, zorder=3)
-        ax.scatter([a for a, k in zip(x, isA) if not k], [b for b, k in zip(y, isA) if not k], s=9,
-                   marker=marker, facecolor="white", edgecolor=color, lw=0.7, zorder=3)
+        ax.scatter([a for a, k in zip(x, isA) if not k], [b for b, k in zip(y, isA) if not k], s=4,
+                   marker=marker, facecolor="white", edgecolor=color, lw=0.5, zorder=3)
     d10 = [v[0] for v in DF_10_50[name]]; d50 = [v[1] for v in DF_10_50[name]]
-    ax.plot(x, [50 + 50 / 6 * v for v in d10], color="#4a3aa7", lw=0.8, alpha=0.5, zorder=2)
-    ax.plot(x, [50 + 50 / 6 * v for v in d50], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)), zorder=2)
+    ax.plot(x, [to_pct(v) for v in d10], color="#4a3aa7", lw=0.6, alpha=0.5, zorder=2)
+    ax.plot(x, [to_pct(v) for v in d50], color="#d55181", lw=0.6, alpha=0.5, ls=(0, (3, 1.2)), zorder=2)
     y = [r[1] for r in rows]
-    ax.plot(x, [50 + 50 / 6 * v for v in y], color=INK, lw=1.0, zorder=2)
-    ax.scatter([a for a, k in zip(x, isA) if k], [50 + 50 / 6 * b for b, k in zip(y, isA) if k], s=9, color=INK, lw=0, zorder=3)
-    ax.scatter([a for a, k in zip(x, isA) if not k], [50 + 50 / 6 * b for b, k in zip(y, isA) if not k], s=9,
-               facecolor="white", edgecolor=INK, lw=0.7, zorder=3)
+    ax.plot(x, [to_pct(v) for v in y], color=INK, lw=0.8, zorder=2)
+    ax.scatter([a for a, k in zip(x, isA) if k], [to_pct(b) for b, k in zip(y, isA) if k], s=4, color=INK, lw=0, zorder=3)
+    ax.scatter([a for a, k in zip(x, isA) if not k], [to_pct(b) for b, k in zip(y, isA) if not k], s=4,
+               facecolor="white", edgecolor=INK, lw=0.5, zorder=3)
     d, r = name.split("_", 1)
-    ax.text((x[0] + x[-1]) / 2, 102, f"{r}\n{d}", ha="center", va="bottom", fontsize=6.0, color=INK, linespacing=1.1)
+    ax.text((x[0] + x[-1]) / 2, 102, f"{r}\n{d}", ha="center", va="bottom", fontsize=FS - 0.6, color=INK, linespacing=1.05)
     xt += x; xl += labels
     pos = x[-1] + 1 + GAP
 
-ax.axhline(50, color=INK2, lw=0.6, ls=(0, (3, 2)), zorder=1)
-# left axis: volumetric metrics, 0-100 %
+ax.axhline(50, color=INK2, lw=0.5, ls=(0, (3, 2)), zorder=1)
 ax.set_ylim(0, 100); ax.set_yticks([0, 50, 100])
-ax.set_ylabel("Volumetric metrics (%)", color=INK)
-# right axis: dF@25, aligned so that 0 pp sits on the 25 % grid line (1 pp = 5 %)
-axr.set_ylim(-6, 6)
-axr.set_yticks([-6, 0, 6])
-
-axr.set_ylabel(r"$\Delta$F (pp)", color=INK)
-axr.yaxis.set_label_coords(1.045, 0.5)
-ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=5.6)
+ax.set_ylabel("Volumetric metrics (%)", color=INK, fontsize=FS, labelpad=1.5)
+axr.set_ylim(-6, 6); axr.set_yticks([-6, 0, 6])
+axr.set_ylabel(r"$\Delta$F (pp)", color=INK, fontsize=FS, labelpad=1.5)
+ax.tick_params(axis="y", labelsize=FS); axr.tick_params(axis="y", labelsize=FS)
+ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=FS - 0.8)
 ax.set_xlim(-0.6, xt[-1] + 0.6)
 
-handles = [Line2D([0], [0], color="#4a3aa7", lw=0.8, alpha=0.5),
-           Line2D([0], [0], color=INK, lw=1.0, marker="o", markersize=3, markeredgewidth=0),
-           Line2D([0], [0], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)))]
-handles += [Line2D([0], [0], color=c, lw=1.0, marker=m, markersize=3, markeredgewidth=0) for _, _, c, m in METRICS]
+handles = [Line2D([0], [0], color="#4a3aa7", lw=0.6, alpha=0.5),
+           Line2D([0], [0], color=INK, lw=0.8, marker="o", markersize=2.2, markeredgewidth=0),
+           Line2D([0], [0], color="#d55181", lw=0.6, alpha=0.5, ls=(0, (3, 1.2)))]
+handles += [Line2D([0], [0], color=c, lw=0.8, marker=m, markersize=2.2, markeredgewidth=0) for _, _, c, m in METRICS]
 names = [r"$\Delta$F@10", r"$\Delta$F@25", r"$\Delta$F@50"] + [m[0] for m in METRICS]
-ax.legend(handles, names, loc="upper center", ncol=7, frameon=False, fontsize=5.6,
-           bbox_to_anchor=(0.5, -0.13), bbox_transform=ax.transAxes, handlelength=1.3, columnspacing=0.9, handletextpad=0.35)
-fig.subplots_adjust(left=0.075, right=0.93, top=0.84, bottom=0.235)
-fig.savefig(sys.argv[1], bbox_inches="tight", pad_inches=0.015)
+# legend reads row by row: dF lines on the first row, volumetric metrics on the second
+blank = Line2D([0], [0], lw=0, alpha=0)
+order = [0, 3, 1, 4, 2, 5, None, 6]
+handles = [handles[i] if i is not None else blank for i in order]
+names = [names[i] if i is not None else "" for i in order]
+ax.legend(handles, names, loc="upper center", ncol=4, frameon=False, fontsize=FS,
+          bbox_to_anchor=(0.5, -0.11), bbox_transform=ax.transAxes, handlelength=1.6,
+          columnspacing=0.9, handletextpad=0.35, labelspacing=0.25)
+fig.savefig(sys.argv[1], bbox_inches="tight", pad_inches=0.01)
 if len(sys.argv) > 2:
-    fig.savefig(sys.argv[2], dpi=300, bbox_inches="tight", pad_inches=0.015)
+    fig.savefig(sys.argv[2], dpi=400, bbox_inches="tight", pad_inches=0.01)
