@@ -46,7 +46,7 @@ The observation-derived targets are produced by Stages~1 and~2 together. Just as
 \end{reply}
 \point{Editor E4: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
-WarpVox remains stable over repeated correction and fusion: on five multi-loop sequences with 15 corrections, it keeps the surface close to reintegration, recovers most of the TSDF, and returns a TSDF ready for continued fusion. The F-scores compare each map with the ground truth: WarpVox differs from reintegration by $+0.36$\,pp at F@25 on average after correction and by $-0.01$\,pp after continued fusion, with no common trend over successive corrections. The volumetric metrics compare each map with reintegration: within their shared domain, their means after correction range from 80.09\% to 97.28\%, and every continued-fusion interval raises all four. R1-3(b) reports all 25 checkpoints.
+WarpVox remains stable over repeated correction and fusion: on five multi-loop sequences with 15 corrections, its surface accuracy stays close to reintegration, and its TSDF supports continued fusion after every correction. The F-scores compare each map with the ground truth: after correction, WarpVox differs from reintegration by $+0.36$\,pp at F@25 on average, with no common trend over successive corrections. The volumetric metrics compare each map with reintegration, since no ground-truth TSDF exists: after correction, their means range from 80.09\% to 97.28\%, and all four remain above 70\% at every checkpoint. These differences leave the quality of subsequent reconstruction unchanged: new measurements are integrated with the same Voxblox update as in reintegration and refine the earlier regions they revisit, while unvisited regions keep their corrected state. After continued fusion, $\Delta F@25$ averages $-0.01$\,pp, and every interval raises all four volumetric metrics. R1-3(b) reports all 25 checkpoints.
 \end{reply}
 \section*{Response to Reviewer 1}
 \point{R1-2: Stage-3 pseudocode}{The four-stage structure is easy to follow, and the introduction clearly motivates the problem. Section III-D is harder to follow because several filtering, target-adjustment, and mesh-repair operations are described in succession. Pseudocode showing their order would help.}
@@ -189,7 +189,7 @@ ElasticFusion derives deformation constraints from local and global surface regi
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
-ElasticFusion represents the surface-deformation methods that the reviewer asks about. Section IV-C compares WarpVox with a more recent representative of this class, Kimera-PGMO, which also uses an embedded deformation graph, on the same input mesh and trajectories (Table III, R2-S2); the requested ElasticFusion experiments extend this comparison. We ran ElasticFusion, as in its published evaluation, on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. Reintegration, which fuses the same measurements under the corrected poses, serves as the native-TSDF reference.
+ElasticFusion represents the surface-deformation methods that the reviewer asks about, and the submitted Section IV-C already compares WarpVox with a more recent representative of this class, Kimera-PGMO, which also uses an embedded deformation graph, on the same input mesh and trajectories (Table III, R2-S2). As requested, we additionally ran ElasticFusion, as in its published evaluation, on TUM fr3/long\_office\_household and ten Kimera-Multi sequences. Reintegration, which fuses the same measurements under the corrected poses, serves as the native-TSDF reference.
 
 TUM is ElasticFusion's own benchmark setting. Our EF setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the ElasticFusion paper. Against a reference reconstructed from RGB-D measurements with motion-capture poses, WarpVox leads ElasticFusion at every F-score threshold (1, 2, and 5\,cm) and in Chamfer distance:
 \begin{center}\small
@@ -210,7 +210,7 @@ Voxblox reintegration & 8.18 & 24.29 & 44.13 & 1.03\\
 WarpVox & 8.16 & 23.68 & 43.18 & 1.04\\\bottomrule
 \end{tabular}
 \end{center}
-ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m on these sequences, which accounts for its scores, while WarpVox stays close to reintegration. As a system-level outcome, this reflects the distinction in R2-S2: ElasticFusion corrects its map through its own registrations, whereas WarpVox applies trajectory corrections from an external SLAM back-end. The correction methods themselves are compared under identical inputs in Table III.
+ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m on these sequences, which accounts for its scores, while WarpVox stays close to reintegration. This reflects the distinction in R2-S2: ElasticFusion corrects its map through its own registrations, whereas WarpVox applies trajectory corrections from an external SLAM back-end.
 \end{reply}
 \subsection*{General}
 
