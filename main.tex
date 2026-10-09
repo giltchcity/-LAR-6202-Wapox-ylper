@@ -30,6 +30,19 @@ Thank you for the detailed comments. We have rewritten the Method section and co
 \item ElasticFusion comparisons on TUM RGB-D and Kimera-Multi, and Chamfer distances for the reconstruction and deformation baselines.
 \end{itemize}
 
+\section*{Statement of Changes}
+\begin{itemize}[nosep,leftmargin=*]
+\item Abstract: the 0.32\,pp bound stated as a dataset mean; the Kimera-PGMO result with Chamfer distance; abbreviations expanded on first use.
+\item Section I: contributions updated to the observation-derived target construction, continued fusion with later corrections, and the extended evaluation.
+\item Section III: rewritten with explicit definitions and update rules; parameter table (Table~I); Algorithm~1 for the Stage-3 order; Figures~3 -- 5 for association, clustering, and support classes; robust scale and observed-volume transport rules specified.
+\item Section IV-A: protocol consolidated; Chamfer distance added; the shared ten-sequence set defined.
+\item Section IV-B: Chamfer distance in Table~II; event-level F@25 ranges; stage-time workloads.
+\item Section IV-C: ElasticFusion comparison added; Chamfer distance in Table~IV.
+\item Section IV-D (new): repeated correction and continued fusion on five multi-loop sequences (Fig.~7).
+\item Section IV-E: matched multi-keyframe pose-transport baseline with ten paired results, Stage-1 screening ablation, parameter sensitivity, and keyframe-only reintegration.
+\item Limitations, Conclusion, and references revised.
+\end{itemize}
+
 \section*{Response to the Editor}
 The Editor's report is grouped into the four requests below.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
