@@ -29,7 +29,7 @@ C = {
 ax = None
 FS = 1.0  # font scale of the current figure
 WIDTH_CM = 8.64  # \\columnwidth of ieeeconf
-RECON_CM = 7.3   # Fig. 5 width, 0.845\\columnwidth
+RECON_CM = 6.6   # Fig. 5 width, 0.764\\columnwidth
 TXT, NOTE, MATH = 7.5, 7.0, 8.2  # printed font sizes (pt)
 
 
@@ -157,7 +157,7 @@ def save(fig, name):
 # ---------------------------------------------------------------- (a) association
 # Half-column panel (Figs. 3 and 4 share one row of a column); legend under the rays.
 HALF_CM = 4.2
-fig = new_figure(0.15, 4.85, 6.12, 8.98, HALF_CM)
+fig = new_figure(0.15, 4.85, 6.30, 8.98, HALF_CM)
 v = (4.05, 7.77)
 cams = [(.45, 8.52), (.45, 7.78), (.45, 7.03)]
 fractions = [.925, .92, .47]
@@ -180,20 +180,20 @@ text(4.36, 8.78, r"$\mathcal{M}^-$", MATH, "left")
 text(samples[0][0] - .10, samples[0][1] + .22, r"$m_1$", MATH, color="blue")
 text(samples[1][0] - .12, samples[1][1] - .24, r"$m_2$", MATH, color="blue")
 text(samples[2][0] + .03, samples[2][1] - .25, r"$m_3$", MATH, color="orange")
-circle(.55, 6.62, .05, "blue", "blue", .4)
-text(.75, 6.62, "Retained observation", NOTE, "left")
-cross(.55, 6.30, .05)
-text(.75, 6.30, "Rejected observation", NOTE, "left")
+circle(.55, 6.50, .05, "blue", "blue", .4)
+text(.72, 6.50, "Retained", NOTE, "left")
+cross(2.05, 6.50, .05)
+text(2.22, 6.50, "Rejected", NOTE, "left")
 save(fig, "mech_assoc")
 
 # ---------------------------------------------------------------- (b) clustering
 # The "(cell, component)" rule moves to the caption; labels sit outside the bands.
-fig = new_figure(8.25, 13.25, 5.78, 8.80, HALF_CM)
+fig = new_figure(8.25, 13.25, 6.00, 8.86, HALF_CM)
 x0 = 8.43
-cx, cy, cw, ch = 9.72, 6.60, 2.02, 2.12
+cx, cy, cw, ch = 9.72, 6.72, 2.02, 2.02
 line([(cx, cy), (cx + cw, cy), (cx + cw, cy + ch), (cx, cy + ch), (cx, cy)], "muted", .65, True)
 xs = [.15, .79, 1.42, 2.00, 2.61, 3.22, 3.92, 4.65]
-for mid, color, phase, side in [(8.06, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
+for mid, color, phase, side in [(8.06, "blue", 0, 1), (7.48, "teal", 1.4, -1)]:
     upper = [(x0 + x, mid + .18 + .08 * math.sin(1.6 * x + phase)) for x in xs]
     lower = [(x0 + x, mid - .18 + .08 * math.sin(1.6 * x + phase)) for x in xs]
     polygon(upper + lower[::-1], "white", color, .55)
@@ -206,11 +206,11 @@ for mid, color, phase, side in [(8.06, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
     xp = cx + cw / 2
     yp = mid + .08 * math.sin(1.6 * (xp - x0) + phase)
     circle(xp, yp, .105, "white", color, 1.2)
-    text(xp, yp + side * .43, r"$p_A^-$" if color == "blue" else r"$p_B^-$", MATH, color=color)
-for (lx, ly), kind, label in [((8.55, 6.33), "blue", "Component A"),
-                              ((10.85, 6.33), "teal", "Component B"),
-                              ((8.55, 5.98), "proxy", "Proxy vertex"),
-                              ((10.85, 5.98), "cell", "Spatial cell")]:
+    text(xp, yp + side * (.43 if side > 0 else .38), r"$p_A^-$" if color == "blue" else r"$p_B^-$", MATH, color=color)
+for (lx, ly), kind, label in [((8.55, 6.50), "blue", "Component A"),
+                              ((10.85, 6.50), "teal", "Component B"),
+                              ((8.55, 6.17), "proxy", "Proxy vertex"),
+                              ((10.85, 6.17), "cell", "Spatial cell")]:
     if kind == "proxy":
         circle(lx, ly, .083, "white", "ink", 1)
     elif kind == "cell":
@@ -316,7 +316,7 @@ for sy in range(-8, 20):
         if not has_negative:
             classes[ix, iy] = "free"
 
-fig = new_figure(0.22, 10.12, 0.93, 5.62, RECON_CM, RECON_CM / WIDTH_CM * 1.04)
+fig = new_figure(0.22, 10.12, 0.93, 5.62, RECON_CM, RECON_CM / WIDTH_CM * 1.08)
 for iy in range(ny):
     for ix in range(snx):
         old = source_center(ix, iy)
