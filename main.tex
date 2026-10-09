@@ -63,6 +63,8 @@ WarpVox differs from existing deformation-based approaches in where the correcti
 The comparison with surface-deformation methods is already part of the submitted evaluation: Section IV-C (Table~III) compares WarpVox with Kimera-PGMO, which corrects the trajectory and mesh jointly through an embedded deformation graph, and WarpVox achieves higher F@25/F@50 and lower Chamfer distance in less than half the surface-correction time. Its complete update, including native-TSDF reconstruction, is faster than PGMO's surface correction alone.
 
 As requested by Reviewer 2, we additionally evaluated ElasticFusion, a self-contained surfel SLAM system of the same class, as a complete system on TUM, its own benchmark, and on Kimera-Multi (R2-S3); WarpVox corrects the TSDF of an existing mapping pipeline for RGB-D and LiDAR alike. R1-3(b) demonstrates continued fusion on the corrected volume.
+
+Each component of the method is isolated under shared inputs: the observation-derived targets against Kimera-PGMO and nearest-keyframe pose transport (E3), and the source-supported TSDF against mesh-only conversion (Section IV-E) and over repeated correction and fusion (E4).
 \end{reply}
 \point{Editor E3: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
@@ -230,7 +232,13 @@ We agree that WarpVox should also be compared with surface-deformation methods. 
 \item TUM is ElasticFusion's own room-scale benchmark. Our ElasticFusion setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table 1 of the ElasticFusion paper. Evaluated at 1, 2, and 5\,cm against a reference reconstructed from RGB-D measurements with motion-capture poses, ElasticFusion obtains 62.77\% F@2 and 3.69\,cm Chamfer distance, against 72.13\% and 2.82\,cm for WarpVox, which corrects Voxblox with the ORB-SLAM3 trajectory as in Section IV-B.
 \item On the larger Kimera-Multi sequences, compared at the last evaluated loop event in each sequence, ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m, leaving its map at 1.98\% F@25.
 \end{itemize}
-This result reflects the system-level difference: ElasticFusion deforms its map through its own registrations (R2-S2), whereas WarpVox applies the trajectory revisions of the SLAM system in use; the correction method itself is compared with Kimera-PGMO under shared inputs and trajectories above.
+This result reflects the system-level difference: ElasticFusion deforms its map through its own registrations (R2-S2), whereas WarpVox applies the trajectory revisions of the SLAM system in use. Since ElasticFusion accepts no later trajectory revision, the correction method itself is compared with Kimera-PGMO, which applies an embedded deformation graph, as ElasticFusion does, to external trajectory corrections under shared inputs and trajectories (above).
+
+The method contribution lies in two components, each isolated under shared inputs:
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
+\item the observation-derived targets correct the surface more accurately than Kimera-PGMO's deformation graph (above) and exceed nearest-keyframe pose transport by 0.637 percentage points at F@25, mainly through the observations themselves (R1-3(a));
+\item the source-supported TSDF improves F@25 by 0.216 percentage points over mesh-only conversion and returns a native TSDF that resumes fusion and later corrections (R1-3(b)), within 0.32 percentage points of full reintegration in dataset-mean F@25 at a $48\times$ mean speedup on RGB-D.
+\end{itemize}
 
 ElasticFusion is a self-contained surfel SLAM system that corrects its map through the registrations of its own tracking (R2-S2). WarpVox takes the trajectory correction of a separate SLAM system and corrects the TSDF of an existing mapping pipeline for RGB-D and LiDAR alike, which suits the growing scale and sensing of today's mapping data. Section IV-C of the revision reports this comparison.
 \end{reply}
