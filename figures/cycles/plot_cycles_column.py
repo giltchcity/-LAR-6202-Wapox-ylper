@@ -73,7 +73,7 @@ plt.rcParams.update({
 })
 
 
-GAP = 0.3
+GAP = 0.4
 fig, ax = plt.subplots(figsize=(3.40, 1.55))  # one paper column
 axr = ax.twinx()
 ax.set_zorder(axr.get_zorder() + 1); ax.patch.set_visible(False)
@@ -110,20 +110,26 @@ for name, rows in SEQ:
     ax.scatter([a for a, k in zip(x, isA) if not k], [50 + 50 / 6 * b for b, k in zip(y, isA) if not k], s=5,
                facecolor="white", edgecolor=INK, lw=0.5, zorder=3)
     date, robot = name.split("_", 1)
-    ax.text((x[0] + x[-1]) / 2, 102, f"{robot}\n{date}", ha="center", va="bottom", fontsize=4.6,
-            color=INK, linespacing=0.95)
+    # one horizontal line per sequence; the two names around the short middle group move outward
+    align = {"1207_sparkal1": ("right", x[-1]), "1208_apis": ("left", x[0])}.get(
+        name, ("center", (x[0] + x[-1]) / 2))
+    ax.text(align[1], 101.5, f"{robot} {date}", ha=align[0], va="bottom", fontsize=4.0, color=INK)
     xt += x; xl += labels
     pos = x[-1] + 1 + GAP
 
 ax.axhline(50, color=INK2, lw=0.6, ls=(0, (3, 2)), zorder=1)
 # left axis: volumetric metrics, 0-100 %
 ax.set_ylim(0, 100); ax.set_yticks([0, 50, 100])
-ax.set_ylabel("Volumetric metrics (%)", color=INK, labelpad=1)
+ax.set_ylabel("Volumetric metrics (%)", color=INK, labelpad=0.5)
+ax.tick_params(axis="y", labelrotation=90, pad=1)
+for t in ax.get_yticklabels(): t.set_va("center")
 # right axis: dF@25, aligned so that 0 pp sits on the 25 % grid line (1 pp = 5 %)
 axr.set_ylim(-6, 6)
 axr.set_yticks([-6, 0, 6])
 
-axr.set_ylabel(r"$\Delta$F (pp)", color=INK, labelpad=1)
+axr.set_ylabel(r"$\Delta$F (pp)", color=INK, labelpad=0.5)
+axr.tick_params(axis="y", labelrotation=90, pad=1)
+for t in axr.get_yticklabels(): t.set_va("center")
 ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=4.2)
 ax.tick_params(axis="x", pad=1)
 ax.set_xlim(-0.25, xt[-1] + 0.25)
@@ -133,9 +139,9 @@ handles = [Line2D([0], [0], color="#4a3aa7", lw=0.8, alpha=0.5),
            Line2D([0], [0], color="#d55181", lw=0.8, alpha=0.5, ls=(0, (4, 1.5)))]
 handles += [Line2D([0], [0], color=c, lw=1.0, marker=m, markersize=3, markeredgewidth=0) for _, _, c, m in METRICS]
 names = [r"$\Delta$F@10", r"$\Delta$F@25", r"$\Delta$F@50"] + [m[0] for m in METRICS]
-ax.legend(handles, names, loc="upper center", ncol=4, frameon=False, fontsize=4.8,
-           bbox_to_anchor=(0.5, -0.11), bbox_transform=ax.transAxes, handlelength=1.3, columnspacing=0.8,
-           handletextpad=0.3, labelspacing=0.25)
+ax.legend(handles, names, loc="upper center", ncol=7, frameon=False, fontsize=4.4,
+           bbox_to_anchor=(0.5, -0.15), bbox_transform=ax.transAxes, handlelength=1.0, columnspacing=0.55,
+           handletextpad=0.25, borderaxespad=0.0, borderpad=0.0)
 fig.subplots_adjust(left=0.075, right=0.93, top=0.84, bottom=0.235)
 fig.savefig(sys.argv[1], bbox_inches="tight", pad_inches=0.01)
 if len(sys.argv) > 2:
