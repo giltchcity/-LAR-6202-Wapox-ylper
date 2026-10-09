@@ -29,6 +29,7 @@ C = {
 ax = None
 FS = 1.0  # font scale of the current figure
 WIDTH_CM = 8.64  # \\columnwidth of ieeeconf
+RECON_CM = 7.3   # Fig. 5 width, 0.845\\columnwidth
 TXT, NOTE, MATH = 7.5, 7.0, 8.2  # printed font sizes (pt)
 
 
@@ -154,8 +155,9 @@ def save(fig, name):
 
 
 # ---------------------------------------------------------------- (a) association
-# Compact layout: cameras closer in height so the figure is short and dense.
-fig = new_figure(0.15, 7.75, 6.80, 8.98)
+# Half-column panel (Figs. 3 and 4 share one row of a column); legend under the rays.
+HALF_CM = 4.2
+fig = new_figure(0.15, 4.85, 6.12, 8.98, HALF_CM)
 v = (4.05, 7.77)
 cams = [(.45, 8.52), (.45, 7.78), (.45, 7.03)]
 fractions = [.925, .92, .47]
@@ -178,18 +180,15 @@ text(4.36, 8.78, r"$\mathcal{M}^-$", MATH, "left")
 text(samples[0][0] - .10, samples[0][1] + .22, r"$m_1$", MATH, color="blue")
 text(samples[1][0] - .12, samples[1][1] - .24, r"$m_2$", MATH, color="blue")
 text(samples[2][0] + .03, samples[2][1] - .25, r"$m_3$", MATH, color="orange")
-circle(5.12, 8.70, .05, "blue", "blue", .4)
-text(5.32, 8.70, "Retained observation", TXT, "left")
-cross(5.12, 8.34, .05)
-text(5.32, 8.34, "Rejected observation", TXT, "left")
-text(6.38, 7.78, r"$\delta_{rj}\leq g_0+g_1z_{rj}^-$", MATH)
-text(6.38, 7.27, "Old poses establish", NOTE, color="muted")
-text(6.38, 6.99, "observation support", NOTE, color="muted")
+circle(.55, 6.62, .05, "blue", "blue", .4)
+text(.75, 6.62, "Retained observation", NOTE, "left")
+cross(.55, 6.30, .05)
+text(.75, 6.30, "Rejected observation", NOTE, "left")
 save(fig, "mech_assoc")
 
 # ---------------------------------------------------------------- (b) clustering
 # The "(cell, component)" rule moves to the caption; labels sit outside the bands.
-fig = new_figure(8.25, 15.75, 6.52, 8.80)
+fig = new_figure(8.25, 13.25, 5.78, 8.80, HALF_CM)
 x0 = 8.43
 cx, cy, cw, ch = 9.72, 6.60, 2.02, 2.12
 line([(cx, cy), (cx + cw, cy), (cx + cw, cy + ch), (cx, cy + ch), (cx, cy)], "muted", .65, True)
@@ -208,16 +207,18 @@ for mid, color, phase, side in [(8.06, "blue", 0, 1), (7.30, "teal", 1.4, -1)]:
     yp = mid + .08 * math.sin(1.6 * (xp - x0) + phase)
     circle(xp, yp, .105, "white", color, 1.2)
     text(xp, yp + side * .43, r"$p_A^-$" if color == "blue" else r"$p_B^-$", MATH, color=color)
-lx = 13.80
-line([(lx - .13, 8.50), (lx + .13, 8.50)], "blue", 1.0)
-text(lx + .25, 8.50, "Component A", TXT, "left")
-line([(lx - .13, 8.08), (lx + .13, 8.08)], "teal", 1.0)
-text(lx + .25, 8.08, "Component B", TXT, "left")
-circle(lx, 7.66, .083, "white", "ink", 1)
-text(lx + .25, 7.66, "Proxy vertex", TXT, "left")
-line([(lx - .12, 7.12), (lx + .12, 7.12), (lx + .12, 7.36), (lx - .12, 7.36), (lx - .12, 7.12)],
-     "muted", .6, True)
-text(lx + .25, 7.24, "Spatial cell", TXT, "left")
+for (lx, ly), kind, label in [((8.55, 6.33), "blue", "Component A"),
+                              ((10.85, 6.33), "teal", "Component B"),
+                              ((8.55, 5.98), "proxy", "Proxy vertex"),
+                              ((10.85, 5.98), "cell", "Spatial cell")]:
+    if kind == "proxy":
+        circle(lx, ly, .083, "white", "ink", 1)
+    elif kind == "cell":
+        line([(lx - .12, ly - .12), (lx + .12, ly - .12), (lx + .12, ly + .12),
+              (lx - .12, ly + .12), (lx - .12, ly - .12)], "muted", .6, True)
+    else:
+        line([(lx - .13, ly), (lx + .13, ly)], kind, 1.0)
+    text(lx + .25, ly, label, NOTE, "left")
 save(fig, "mech_cluster")
 
 # ---------------------------------------------------------------- (c) reconstruction
@@ -315,7 +316,7 @@ for sy in range(-8, 20):
         if not has_negative:
             classes[ix, iy] = "free"
 
-fig = new_figure(0.22, 10.12, 0.93, 5.62)
+fig = new_figure(0.22, 10.12, 0.93, 5.62, RECON_CM, RECON_CM / WIDTH_CM * 1.04)
 for iy in range(ny):
     for ix in range(snx):
         old = source_center(ix, iy)
