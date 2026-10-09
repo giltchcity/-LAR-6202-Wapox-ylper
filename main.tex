@@ -81,7 +81,7 @@ The gain comes mainly from the observations themselves, the keyframes that Stage
 WarpVox remains stable in surface accuracy over repeated correction and fusion, on five multi-loop sequences with 15 corrections in total, and its TSDF supports continued fusion after every correction. Each correction recovers the observations again from the keyframe measurements, anchoring the surface to the original measurements.
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item The F-scores compare each map with the ground truth: after correction, WarpVox differs from reintegration by $+0.50$\,pp at F@25 on average, with no common trend over successive corrections.
-\item The volumetric metrics compare each map with reintegration, used as a pseudo-ground-truth reference since no ground-truth TSDF exists; within the domain the two volumes share, the corrected TSDF stays close to reintegration, and the differences that successive corrections introduce lie mainly in the extent of this domain.
+\item The volumetric metrics compare each map with reintegration, used as the reference since no ground-truth TSDF exists; within the domain the two volumes share, the corrected TSDF stays close to reintegration, and the differences that successive corrections introduce lie mainly in the extent of this domain.
 \item New measurements are integrated with the same Voxblox update as in reintegration and refine the earlier regions they revisit, while unvisited regions keep their corrected state: every continued-fusion interval raises all four volumetric metrics, and $\Delta F@25$ averages $-0.01$\,pp after fusion.
 \end{itemize}
 Figure~\ref{fig:reply-cycles} in R1-3(b) shows all 25 checkpoints.
@@ -150,7 +150,7 @@ We evaluated the five multi-loop sequences of the ablation set, with two to six 
 
 The F-scores compare each map with the ground truth. On them, WarpVox stays close to full reintegration over repeated correction and continued fusion: the mean $\Delta F@25$ is $+0.50$\,pp at A and $-0.01$\,pp at B, and the per-event differences, from $-1.48$ to $+2.55$\,pp at A, rise in some sequences and fall in others, with no common trend over successive corrections. Each correction recovers the observations again from the keyframe measurements under its pre-correction poses, anchoring the surface to the original measurements.
 
-The volumetric metrics compare each map with reintegration, used as a pseudo-ground-truth reference since no ground-truth TSDF exists. A TSDF carries more than its surface: support, weight, free space, and sign throughout the volume, and these metrics compare the two volumes voxel by voxel, counting every difference in support or weight.
+The volumetric metrics compare each map with reintegration, used as the reference since no ground-truth TSDF exists. A TSDF carries more than its surface: support, weight, free space, and sign throughout the volume, and these metrics compare the two volumes voxel by voxel, counting every difference in support or weight.
 
 Their differences from reintegration come from reconstructing a TSDF from the corrected mesh, which approximates the voxel-level state of the reintegrated volume, so a surface that matches the ground truth better can still agree less with reintegration. At the second correction of 1207\_sparkal1, for example, WarpVox exceeds reintegration at F@25 while weighted Jaccard moves the other way (Figure~\ref{fig:reply-cycles}).
 
