@@ -98,7 +98,9 @@ Please add a matched multi-keyframe pose-transport baseline. Keep the candidate 
 We agree that Table~IV alone does not separate the steps inside the target construction. Table~IV compares the observation-derived target of Eq.~(4), the output of Stages~1 and~2 together, with nearest-keyframe pose transport, and its 0.637-percentage-point gain is the gain of this target.
 
 \textbf{Matched comparison.}
-We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation improves F@25 by 0.042 percentage points on average and in eight of the ten cases, with paired differences from $-0.04$ to $+0.09$ percentage points; Section IV-E of the revision lists all ten, reproduced in Table~\ref{tab:reply-r1a-paired}.
+We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex.
+
+The measured-sample formulation improves F@25 by 0.042 percentage points on average and in eight of the ten cases, with paired differences from $-0.04$ to $+0.09$ percentage points; Section IV-E of the revision lists all ten, reproduced in Table~\ref{tab:reply-r1a-paired}.
 
 \begin{table}[H]
 \centering\small
@@ -119,10 +121,18 @@ Mean & $+0.042$ & & \\
 \end{table}
 
 \textbf{Contribution of each step.}
-The controls separate the steps: the measured samples of Eq.~(3) add 0.042 percentage points, screening adds 1.13 points, and the number of observations combined per vertex, capped by $n_{\max}\in\{1,4,8,15\}$, changes mean F@25 by at most 0.019 points. Screening is what makes the recovered observations reliable: removing the gate and reliability screening drops F@25 from 26.62\% to 25.49\%, below the 25.98\% of nearest-keyframe transport, while the gate, cutoff, and trimming settings change mean F@25 by at most 0.19\,pp (R1-3(c)). The gain comes mainly from the observations themselves, the keyframes that Stage-1 association and screening identify as having observed each vertex.
+The controls separate the steps:
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
+\item the measured samples of Eq.~(3) add 0.042 percentage points;
+\item screening adds 1.13 points;
+\item the number of observations combined per vertex, capped by $n_{\max}\in\{1,4,8,15\}$, changes mean F@25 by at most 0.019 points.
+\end{itemize}
+Screening is what makes the recovered observations reliable: removing the gate and reliability screening drops F@25 from 26.62\% to 25.49\%, below the 25.98\% of nearest-keyframe transport, while the gate, cutoff, and trimming settings change mean F@25 by at most 0.19\,pp (R1-3(c)). The gain comes mainly from the observations themselves, the keyframes that Stage-1 association and screening identify as having observed each vertex.
 
 \textbf{Why the observations carry the gain.}
-Stages~1 and~2 trace TSDF fusion backwards. Projective TSDF fusion integrates each sample into the voxels along its pixel ray within the truncation band; Stage~1 applies this rule from the surface back to the keyframes, with a gate tighter than the truncation band. Fusion forms the surface at a vertex as a weighted combination of the measurements that observed it. Stage~1 recovers these measurements by projective association, keeps those consistent with the surface by the geometric gate, and weights them by reliability; Stage~2 places them under the corrected poses with Eq.~(3) and combines them by the trimmed weighted mean of Eq.~(4). The two factors named in the review are steps of this construction.
+Stages~1 and~2 trace TSDF fusion backwards. Projective TSDF fusion integrates each sample into the voxels along its pixel ray within the truncation band; Stage~1 applies this rule from the surface back to the keyframes, with a gate tighter than the truncation band.
+
+Fusion forms the surface at a vertex as a weighted combination of the measurements that observed it. Stage~1 recovers these measurements by projective association, keeps those consistent with the surface by the geometric gate, and weights them by reliability; Stage~2 places them under the corrected poses with Eq.~(3) and combines them by the trimmed weighted mean of Eq.~(4). The two factors named in the review are steps of this construction.
 
 The requested baseline is not an existing method: it keeps WarpVox's Stage-1 association, gate, and reliability weights and replaces only the measured samples of Eq.~(3) with pose transport. The comparison locates the main gain in the association-based construction, which nearest-keyframe transport and Kimera-PGMO's timestamp-linked deformation graph lack; WarpVox exceeds the first by 0.637 percentage points at F@25 and the second at F@25/F@50 and in Chamfer distance (Section IV-C of the revision).
 \end{reply}
@@ -180,9 +190,17 @@ For observation $r$ of vertex $j$, the aggregation weight is
 \alpha_{rj}/(1+\|q_{rj}^+-v_j^-\|/\zeta_m), & \text{LiDAR},
 \end{cases}
 \]
-where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean, which gives the observation-derived target $v_j^*$ of Eq.~(4). With fewer than three valid samples, all are retained. R2-D3 -- D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
+where $q_{rj}^+$ is the matched sensor sample transformed by the corrected keyframe pose. The initial target $\bar q_j$ is its weighted mean over observations with valid corrected poses. We retain samples whose residual from $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$ and recompute the weighted mean, which gives the observation-derived target $v_j^*$ of Eq.~(4). With fewer than three valid samples, all are retained.
 
-We varied the RGB-D association gate $g_0$ (0.04 and 0.16\,m) and reliability cutoff $\alpha_{\min}$ (0 and 0.20), the Stage-2 trimming parameters $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m, and the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings one at a time on the ten ablation cases. From the fixed setting (mean F@25 of 26.62\%), mean F@25 changes by $-0.19$ to $+0.05$ percentage points, and with the observation cap $n_{\max}\in\{1,4,8,15\}$ by at most 0.019 points (Section IV-E of the revision).
+R2-D3 -- D4 and R2-D11 specify the neighbourhood and robust rejection rules; R2-D18 gives the repair tests.
+
+We varied the following settings one at a time on the ten ablation cases:
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
+\item the RGB-D association gate $g_0$ (0.04 and 0.16\,m) and reliability cutoff $\alpha_{\min}$ (0 and 0.20);
+\item the Stage-2 trimming parameters $\kappa\in\{1.5,4.0\}$ and $\epsilon_m\in\{0.01,0.05\}$\,m;
+\item the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings.
+\end{itemize}
+From the fixed setting (mean F@25 of 26.62\%), mean F@25 changes by $-0.19$ to $+0.05$ percentage points, and with the observation cap $n_{\max}\in\{1,4,8,15\}$ by at most 0.019 points (Section IV-E of the revision).
 
 \textbf{Role of Stage-1 observation screening.}
 A complementary ablation removes the Stage-1 gate and reliability screening, while Stages~2 -- 4 and the measured-sample targets are unchanged. Mean F@25 drops from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}), below the nearest-keyframe baseline in Table~IV (25.98\%), whereas the one-at-a-time gate and cutoff changes in the sweep above alter it by at most 0.19 points. This screening is what lets the observations improve on nearest-keyframe pose transport (R1-3(a)).
@@ -218,11 +236,15 @@ We agree that the submitted Section III left several definitions implicit, and t
 \end{reply}
 \point{R2-S2: Conceptual distinction from ElasticFusion}{The difference seems to be the use of triangles in place of surfels for computing the deformations.}
 \begin{reply}
-WarpVox and ElasticFusion share the idea of correcting a fused map by deforming its surface; the distinction lies in where the correction comes from and what it returns, not in the surface primitive. WarpVox corrects an externally maintained TSDF after a trajectory revision supplied by a separate SLAM back-end and returns a native TSDF for continued fusion (Sections I -- II). Stored keyframe measurements are associated with the fused surface under the old poses and repositioned under the corrected poses to construct deformation targets. The mesh is an intermediate representation: reconstruction combines its corrected geometry with source support, sign, integration weights, and free space to restore the volumetric state needed for fusion.
+WarpVox and ElasticFusion share the idea of correcting a fused map by deforming its surface; the distinction lies in where the correction comes from and what it returns, not in the surface primitive.
+
+WarpVox corrects an externally maintained TSDF after a trajectory revision supplied by a separate SLAM back-end and returns a native TSDF for continued fusion (Sections I -- II). Stored keyframe measurements are associated with the fused surface under the old poses and repositioned under the corrected poses to construct deformation targets. The mesh is an intermediate representation: reconstruction combines its corrected geometry with source support, sign, integration weights, and free space to restore the volumetric state needed for fusion.
 
 ElasticFusion derives deformation constraints from local and global surface registration within its surfel SLAM system, so its map is corrected only by registrations that the system accepts itself. In the released code, the option \texttt{-p} replaces per-frame tracking with given poses, while loop closure stays enabled and its deformation constraints still come from ElasticFusion's own registrations. A later revision of the trajectory has no route to the already fused map, which is the operation WarpVox provides for an existing TSDF.
 
-Kimera-PGMO, like WarpVox, propagates trajectory corrections, but to a timestamped mesh rather than a TSDF; like ElasticFusion, it uses an embedded deformation graph. The submitted Table III compares WarpVox with Kimera-PGMO on the same input mesh with PGMO's own optimized trajectory, isolating the correction method: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and lowers Chamfer distance from 179.0 to 152.9\,cm, with a $2.34\times$ speedup in surface correction. WarpVox then reconstructs the native TSDF in Stage 4; the complete update takes 4.792\,s, below PGMO's 8.231\,s, and the reconstructed surface exceeds PGMO at F@25/F@50. R1-3(b) demonstrates subsequent fusion and correction on WarpVox-corrected maps.
+Kimera-PGMO, like WarpVox, propagates trajectory corrections, but to a timestamped mesh rather than a TSDF; like ElasticFusion, it uses an embedded deformation graph. The submitted Table III compares WarpVox with Kimera-PGMO on the same input mesh with PGMO's own optimized trajectory, isolating the correction method: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and lowers Chamfer distance from 179.0 to 152.9\,cm, with a $2.34\times$ speedup in surface correction.
+
+WarpVox then reconstructs the native TSDF in Stage 4; the complete update takes 4.792\,s, below PGMO's 8.231\,s, and the reconstructed surface exceeds PGMO at F@25/F@50. R1-3(b) demonstrates subsequent fusion and correction on WarpVox-corrected maps.
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
