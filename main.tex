@@ -164,8 +164,8 @@ We agree that a compact table makes these settings reproducible; the revised Sec
 \begin{center}\small
 \begin{tabular}{p{0.37\linewidth}p{0.55\linewidth}}\toprule
 Quantity & Setting\\\midrule
-Association range & $0.1$--$10$\,m (RGB-D); $0.5$--$80$\,m (LiDAR)\\
-Candidate index radius & $z_{\max}\sqrt{1+x_e^2+y_e^2}$, 14.3 -- 14.7\,m depending on camera intrinsics (RGB-D); 80\,m grid (LiDAR)\\
+Valid range & $0.1$--$5$\,m (RGB-D); $0.5$--$25$\,m (LiDAR)\\
+Candidate index radius & $z_{\max}\sqrt{1+x_e^2+y_e^2}$, 7.2 -- 7.4\,m depending on camera intrinsics (RGB-D); 25\,m grid (LiDAR)\\
 Measurement gate $g_0+g_1z^-$ & $0.08+0.01z^-$\,m (RGB-D); $0.25+0.003z^-$\,m (LiDAR)\\
 Reliability cutoff $\alpha_{\min}$ & $0.05$ (RGB-D); not used (LiDAR)\\
 Candidates per vertex $n_{\max}$ & 15 (LiDAR: 15 of the first 30 candidates)\\
@@ -321,7 +321,7 @@ RGB-D depth images and spherical LiDAR range images, as specified after the subm
 
 \point{R2-B1}{What kind of spatial indexing scheme allows storing/retrieving visibility relationship between vertices and sensors?}
 \begin{reply}
-A $k$-d tree (RGB-D) or grid (LiDAR) retrieves nearby keyframe centres under the pre-correction poses, within 14.3 -- 14.7\,m (the 10\,m viewing frustum, depending on camera intrinsics) or 80\,m, respectively. Projection and geometric verification establish the vertex -- measurement associations (Sec.~III-B); the index retrieves spatial candidates.
+A $k$-d tree (RGB-D) or grid (LiDAR) retrieves nearby keyframe centres under the pre-correction poses, within 7.2 -- 7.4\,m (the 5\,m viewing frustum, depending on camera intrinsics) or 25\,m, respectively. Projection and geometric verification establish the vertex -- measurement associations (Sec.~III-B); the index retrieves spatial candidates.
 \end{reply}
 
 \point{R2-B2}{What does it mean to "sample the projected depth"? Do you mean get the closest?}
