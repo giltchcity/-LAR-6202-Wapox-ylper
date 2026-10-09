@@ -75,32 +75,23 @@ We agree that Table~IV alone does not separate the steps inside the target const
 \textbf{Matched comparison.}
 We evaluated the requested control on the ten Kimera-Multi ablation cases at 25\,cm voxel resolution. The candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing are identical. Each control candidate applies the associated keyframe's pre-to-post pose correction to the source vertex. The measured-sample formulation improves F@25 by 0.042 percentage points on average and in eight of the ten cases, with paired differences from $-0.04$ to $+0.09$ percentage points; Section IV-E of the revision lists all ten, reproduced in Table~\ref{tab:reply-r1a-paired}.
 
-{\small
-\begin{longtable}{lr}
-\caption{Paired F@25 differences on the ten ablation cases: measured-sample targets minus matched pose transport, in percentage points.}\label{tab:reply-r1a-paired}\\
+\begin{table}[H]
+\centering\small
+\caption{Paired F@25 differences on the ten ablation cases: measured-sample targets minus matched pose transport, in percentage points.}\label{tab:reply-r1a-paired}
+\begin{tabular}{lr@{\hspace{2.5em}}lr}
 \toprule
-Case & $\Delta F@25$\\
+Case & $\Delta F@25$ & Case & $\Delta F@25$\\
 \midrule
-\endfirsthead
-\toprule
-Case & $\Delta F@25$\\
+10\_14 acl\_jackal2, L1 & $+0.07$ & 12\_07 sparkal1, L1 & $+0.02$\\
+10\_14 sparkal1, L1 & $-0.04$ & 12\_08 acl\_jackal2, L1 & $+0.07$\\
+10\_14 sparkal2, L1 & $+0.08$ & 12\_08 apis, L1 & $-0.01$\\
+12\_07 acl\_jackal2, L2 & $+0.05$ & 12\_08 sobek, L1 & $+0.04$\\
+12\_07 hathor, L1 & $+0.05$ & 12\_08 thoth, L1 & $+0.09$\\
 \midrule
-\endhead
-10\_14 acl\_jackal2, L1 & $+0.07$\\
-10\_14 sparkal1, L1 & $-0.04$\\
-10\_14 sparkal2, L1 & $+0.08$\\
-12\_07 acl\_jackal2, L2 & $+0.05$\\
-12\_07 hathor, L1 & $+0.05$\\
-12\_07 sparkal1, L1 & $+0.02$\\
-12\_08 acl\_jackal2, L1 & $+0.07$\\
-12\_08 apis, L1 & $-0.01$\\
-12\_08 sobek, L1 & $+0.04$\\
-12\_08 thoth, L1 & $+0.09$\\
-\midrule
-Mean & $+0.042$\\
+Mean & $+0.042$ & & \\
 \bottomrule
-\end{longtable}
-}
+\end{tabular}
+\end{table}
 
 
 
@@ -162,17 +153,18 @@ We varied the RGB-D association gate $g_0$ (0.04 and 0.16\,m) and reliability cu
 \textbf{Role of Stage-1 observation screening.}
 A complementary ablation removes the Stage-1 gate and reliability screening, while Stages~2 -- 4 and the measured-sample targets are unchanged. Mean F@25 drops from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}), below the nearest-keyframe baseline in Table~IV (25.98\%), whereas the one-at-a-time gate and cutoff changes in the sweep above alter it by at most 0.19 points. This screening is what lets the combination of several keyframes improve on nearest-keyframe pose transport (R1-3(a)).
 
-{\small
-\begin{longtable}{lrrr}
-\caption{Stage-1 association ablation on ten cases.}\label{tab:reply-association-gates}\\
+\begin{table}[H]
+\centering\small
+\caption{Stage-1 association ablation on ten cases.}\label{tab:reply-association-gates}
+\begin{tabular}{lrrr}
 \toprule
 Association setting & F@10 (\%) & F@25 (\%) & F@50 (\%)\\
 \midrule
 Geometrically verified (fixed setting) & 10.16 & 26.62 & 45.40\\
 All association gates removed & 8.93 & 25.49 & 45.29\\
 \bottomrule
-\end{longtable}
-}
+\end{tabular}
+\end{table}
 \end{reply}
 
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
