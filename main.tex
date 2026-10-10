@@ -60,7 +60,7 @@ The parameter table lists all settings, which are fixed within each modality acr
 \begin{reply}
 WarpVox differs from existing deformation-based approaches in what the correction returns and where it comes from, not in the surface primitive (R2-S2). ElasticFusion, Kintinuous, and Kimera-PGMO correct surfels, point clouds, or meshes; to our knowledge, WarpVox is the first to return the corrected map as a native, fusion-ready TSDF, applying trajectory corrections from an external SLAM back-end to an already fused TSDF without full reintegration (Sections I -- II).
 
-The comparison with surface-deformation methods is part of the submitted evaluation: Section IV-C (Table~III) compares WarpVox with Kimera-PGMO, which corrects the trajectory and mesh jointly through an embedded deformation graph, and WarpVox achieves higher F@25/F@50 and lower Chamfer distance in less than half the surface-correction time. Its complete update, including native-TSDF reconstruction, is faster than PGMO's surface correction alone.
+The comparison with surface-deformation methods is part of the submitted evaluation: Section IV-C (Table~III in the submitted manuscript; Table~IV in the revision) compares WarpVox with Kimera-PGMO, which corrects the trajectory and mesh jointly through an embedded deformation graph, and WarpVox achieves higher F@25/F@50 and lower Chamfer distance in less than half the surface-correction time. Its complete update, including native-TSDF reconstruction, is faster than PGMO's surface correction alone.
 
 As requested by Reviewer 2, we additionally evaluated ElasticFusion, a self-contained surfel SLAM system of the same class, as a complete system on TUM, its own benchmark, and on Kimera-Multi (R2-S3); WarpVox corrects the TSDF of an existing mapping pipeline for RGB-D and LiDAR alike. R1-3(b) demonstrates continued fusion on the corrected volume.
 
@@ -68,7 +68,7 @@ Each component of the method is isolated under shared inputs: the observation-de
 \end{reply}
 \point{Editor E3: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
-Just as the TSDF is formed from the measurements of the keyframes that observed it, Stage~1 aims to recover and weight these observations for each vertex under the pre-correction poses, and Stage~2 places them under the corrected poses and aggregates them into the observation-derived targets of Eq.~(4). Table~IV, which replaces both stages with nearest-keyframe pose transport, isolates their benefit: 0.637 percentage points at F@25. The controls in R1-3(a) and R1-3(c) separate this benefit:
+Just as the TSDF is formed from the measurements of the keyframes that observed it, Stage~1 aims to recover and weight these observations for each vertex under the pre-correction poses, and Stage~2 places them under the corrected poses and aggregates them into the observation-derived targets of Eq.~(4). Table~V of the revision, which replaces both stages with nearest-keyframe pose transport, isolates their benefit: 0.637 percentage points at F@25. The controls in R1-3(a) and R1-3(c) separate this benefit:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item replacing only the measured samples of Eq.~(3) with pose transport retains all but 0.042 points of it;
 \item the observation cap $n_{\max}\in\{1,4,8,15\}$ changes F@25 by at most 0.019 points;
@@ -119,7 +119,7 @@ Mean & $+0.042$ & & \\
 \end{tabular}
 \end{table}
 
-Table~IV compares the observation-derived target of Eq.~(4), the output of Stages~1 and~2 together, with nearest-keyframe pose transport, and its 0.637-percentage-point gain is the gain of this target; the controls below separate its steps.
+Table~V of the revision compares the observation-derived target of Eq.~(4), the output of Stages~1 and~2 together, with nearest-keyframe pose transport, and its 0.637-percentage-point gain is the gain of this target; the controls below separate its steps.
 
 \textbf{Contribution of each step.}
 The controls separate the steps:
@@ -204,7 +204,7 @@ We varied the following settings one at a time on the ten ablation cases:
 From the fixed setting (mean F@25 of 26.62\%), mean F@25 changes by $-0.19$ to $+0.05$ percentage points, and with the observation cap $n_{\max}\in\{1,4,8,15\}$ by at most 0.019 points (Section IV-E of the revision).
 
 \textbf{Role of Stage-1 observation screening.}
-A complementary ablation removes the Stage-1 gate and reliability screening, while Stages~2 -- 4 and the measured-sample targets are unchanged. Mean F@25 drops from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}), below the nearest-keyframe baseline in Table~IV (25.98\%), whereas the one-at-a-time gate and cutoff changes in the sweep above alter it by at most 0.19 points. This screening is what lets the observations improve on nearest-keyframe pose transport (R1-3(a)).
+A complementary ablation removes the Stage-1 gate and reliability screening, while Stages~2 -- 4 and the measured-sample targets are unchanged. Mean F@25 drops from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}), below the nearest-keyframe baseline in Table~V of the revision (25.98\%), whereas the one-at-a-time gate and cutoff changes in the sweep above alter it by at most 0.19 points. This screening is what lets the observations improve on nearest-keyframe pose transport (R1-3(a)).
 
 \begin{table}[H]
 \centering\small
@@ -259,7 +259,7 @@ ElasticFusion represents the methods that the reviewer asks about. As requested,
 \end{itemize}
 This result reflects the system-level difference: ElasticFusion deforms its map through its own registrations (R2-S2), whereas WarpVox applies the trajectory revisions of the SLAM system in use. Since ElasticFusion accepts no later trajectory revision, the correction method itself is compared with Kimera-PGMO, which applies an embedded deformation graph, as ElasticFusion does, to external trajectory corrections under shared inputs and trajectories (below).
 
-The submitted Section IV-C has compared WarpVox with a more recent representative of this class, Kimera-PGMO, which also uses an embedded deformation graph, on the same input mesh and trajectories (Table III), isolating the correction method: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and lowers Chamfer distance from 179.0 to 152.9\,cm, with a $2.34\times$ speedup in surface correction. WarpVox then reconstructs the native TSDF in Stage 4; the complete update takes 4.792\,s, below PGMO's 8.231\,s, and the reconstructed surface exceeds PGMO at F@25/F@50.
+The submitted Section IV-C has compared WarpVox with a more recent representative of this class, Kimera-PGMO, which also uses an embedded deformation graph, on the same input mesh and trajectories (Table~III in the submitted manuscript; Table~IV in the revision), isolating the correction method: WarpVox improves F@25/F@50 by 0.26/0.91 percentage points and lowers Chamfer distance from 179.0 to 152.9\,cm, with a $2.34\times$ speedup in surface correction. WarpVox then reconstructs the native TSDF in Stage 4; the complete update takes 4.792\,s, below PGMO's 8.231\,s, and the reconstructed surface exceeds PGMO at F@25/F@50.
 
 The method contribution lies in two components, each isolated under shared inputs:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
@@ -453,7 +453,7 @@ $c_{bc}=\sum_{f\supset(b,c)}\tfrac12\cot\vartheta^f_{bc}$, where $\vartheta^f_{b
 
 \point{R2-D15}{Is the proposed method using the "proxy" or the source mesh?}
 \begin{reply}
-We solve on the 60K QEM proxy and transfer its displacements to the source mesh. The submitted Section III-D specifies this standard configuration, and Table IV compares it with full-mesh ARAP.
+We solve on the 60K QEM proxy and transfer its displacements to the source mesh. The submitted Section III-D specifies this standard configuration, and Table~IV in the submitted manuscript (Table~V in the revision) compares it with full-mesh ARAP.
 \end{reply}
 
 \point{R2-D16}{What does "topology-local" mean?}
@@ -572,7 +572,7 @@ Voxblox reintegration & 101.9 & 67.3\\
 WarpVox & 103.1 & 68.8\\\bottomrule
 \end{tabular}
 \end{center}
-WarpVox stays within 1.5\,cm of reintegration on both datasets and below every other correction baseline. On the ten-sequence corrected-surface comparison (Table III), CD is 309.6\,cm for the input mesh, 179.0\,cm for Kimera-PGMO one-shot correction, the stronger of its two modes (183.8\,cm online), and 152.9\,cm for WarpVox. WarpVox reduces CD by 26.1\,cm relative to one-shot PGMO under shared inputs.
+WarpVox stays within 1.5\,cm of reintegration on both datasets and below every other correction baseline. On the ten-sequence corrected-surface comparison (Table~IV of the revision), CD is 309.6\,cm for the input mesh, 179.0\,cm for Kimera-PGMO one-shot correction, the stronger of its two modes (183.8\,cm online), and 152.9\,cm for WarpVox. WarpVox reduces CD by 26.1\,cm relative to one-shot PGMO under shared inputs.
 \end{reply}
 
 \point{R2-IVA3}{Table II shows inconsistent relative portions between different datasets. Please discuss why some datasets incur larger time in, e.g., association, whereas other datasets incur larger time in target estimation.}
@@ -582,7 +582,7 @@ Stage times depend on different workloads: association processes candidate verte
 
 \point{R2-IVA4}{Table III: What are "ten bags"?}
 \begin{reply}
-A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table III compares the final states of ten such sequences (10/14: acl\_jackal2, sparkal1, sparkal2; 12/07: acl\_jackal2, hathor, sparkal1; 12/08: acl\_jackal2, apis, sobek, thoth), which Section IV-A of the revision defines as the set shared by the PGMO comparison, repeated correction, and ablation.
+A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table~IV of the revision compares the final states of ten such sequences (10/14: acl\_jackal2, sparkal1, sparkal2; 12/07: acl\_jackal2, hathor, sparkal1; 12/08: acl\_jackal2, apis, sobek, thoth), which Section IV-A of the revision defines as the set shared by the PGMO comparison, repeated correction, and ablation.
 \end{reply}
 
 \bigskip
