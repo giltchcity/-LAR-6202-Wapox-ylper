@@ -1,0 +1,44 @@
+name: revision diff
+# Rebuilds revision_diff.pdf (submitted paper vs latest paper, latexdiff-marked)
+# and commits it here, so main.tex appends it to the response automatically.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: [revision_diff.pdf]
+  schedule:
+    - cron: "*/15 * * * *"   # picks up new paper commits from Overleaf
+permissions:
+  contents: write
+concurrency: revision-diff
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - run: apt-get update -qq && apt-get install -y -qq git python3-pil >/dev/null
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: giltchcity/-LAR-6202-Wapox
+          path: _paper
+          fetch-depth: 0
+      - name: Skip if the paper has not changed
+        id: check
+        run: |
+          git config --global --add safe.directory '*'
+          sha=$(git -C _paper rev-parse --short HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ -f revision_diff.pdf ] && grep -qx "$sha" .revision_diff_sha 2>/dev/null; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Build diff
+        if: steps.check.outputs.skip != '1'
+        run: bash tools/make_diff.sh _paper revision_diff.pdf
+      - name: Commit
+        if: steps.check.outputs.skip != '1'
+        run: |
+          echo "${{ steps.check.outputs.sha }}" > .revision_diff_sha
+          git config user.name "revision-diff bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add revision_diff.pdf .revision_diff_sha
+          git diff --cached --quiet || git commit -m "[auto] revision diff for paper ${{ steps.check.outputs.sha }}"
+          git push
