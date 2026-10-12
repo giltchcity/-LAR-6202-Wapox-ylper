@@ -3,6 +3,11 @@ name: revision diff
 # and commits it here, so main.tex appends it to the response automatically.
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even if the paper has not changed
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths-ignore: [revision_diff.pdf]
@@ -29,7 +34,7 @@ jobs:
           git config --global --add safe.directory '*'
           sha=$(git -C _paper rev-parse --short HEAD)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          if [ -f revision_diff.pdf ] && grep -qx "$sha" .revision_diff_sha 2>/dev/null; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+          if [ "${{ inputs.force }}" != "true" ] && [ -f revision_diff.pdf ] && grep -qx "$sha" .revision_diff_sha 2>/dev/null; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
       - name: Build diff
         if: steps.check.outputs.skip != '1'
         run: bash tools/make_diff.sh _paper revision_diff.pdf
