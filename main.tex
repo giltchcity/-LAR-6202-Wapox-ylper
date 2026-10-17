@@ -22,26 +22,26 @@
 
 Dear Editor and Reviewers,
 
-Thank you for the detailed comments. We rewrote the Method section and ran the additional experiments that you asked for. The main additions are:
+Thank you for the detailed comments. We revised the Method section and conducted the requested experiments. The revision includes:
 \begin{itemize}[nosep,leftmargin=*]
-\item clear definitions, all parameter values, pseudocode, and illustrations of the method;
-\item the matched multi-keyframe pose-transport baseline, with paired results on ten cases;
-\item repeated correction and continued fusion on five sequences with several loop closures, with 15 checkpoints right after correction and 10 after continued fusion;
-\item parameter sensitivity, the F@25 difference for each loop event, and what the video runtimes include;
-\item a comparison with ElasticFusion on TUM RGB-D and Kimera-Multi, and the Chamfer distance for the reconstruction and deformation baselines.
+\item explicit definitions, parameter values, pseudocode, and method illustrations;
+\item a matched multi-keyframe pose-transport baseline, evaluated on ten paired cases;
+\item repeated correction and continued fusion on five multi-loop-closure sequences, with 15 post-correction and 10 post-fusion checkpoints;
+\item parameter sensitivity, event-level F@25 differences, and the scope of the video runtimes;
+\item an ElasticFusion comparison on TUM RGB-D and Kimera-Multi, and Chamfer distances for the reconstruction and deformation baselines.
 \end{itemize}
 The revised manuscript, with all changes marked, follows this response.
 
 \section*{Statement of Changes}
 \begin{itemize}[nosep,leftmargin=*]
 \item Abstract: the 0.32 percentage-point (pp) bound stated as a dataset mean; the Kimera-PGMO result and the Chamfer distance added; abbreviations explained on first use.
-\item Section I: contributions updated to the observation-derived targets, continued fusion with later corrections, and the extended evaluation.
+\item Section I: contributions revised to cover observation-derived targets, continued fusion after subsequent corrections, and the extended evaluation.
 \item Section III: rewritten with explicit definitions and update rules; new parameter table (Table~I), pseudocode for the order of the Stage-3 steps (Algorithm~1), and Figures~3 -- 5 on association, clustering, and support classes; the rules for the robust scale and for observed-volume transport given in full.
-\item Section IV-A: the evaluation protocol in one place; the Chamfer distance; the set of ten sequences that several experiments use.
-\item Section IV-B: the Chamfer distance in Table~II; the range of the F@25 difference over single loop events; the workload behind each stage time.
+\item Section IV-A: a consolidated evaluation protocol, the Chamfer distance, and the ten-sequence set shared across experiments.
+\item Section IV-B: Chamfer distances in Table~II, event-level F@25 difference ranges, and the workload behind each stage time.
 \item Section IV-C: the comparison with ElasticFusion; the Chamfer distance in Table~IV.
 \item Section IV-D (new): repeated correction and continued fusion on five sequences with several loop closures (Figure~7).
-\item Section IV-E: the matched multi-keyframe pose-transport baseline with ten paired results; an ablation without the Stage-1 gate and reliability cutoff; the sensitivity to the thresholds and to the number of observations per vertex ($n_{\max}$); reintegration from the keyframes only.
+\item Section IV-E: the matched multi-keyframe pose-transport baseline with ten paired results; an ablation of the Stage-1 gate and reliability cutoff; sensitivity to thresholds and the number of observations per vertex ($n_{\max}$); reintegration from the keyframes only.
 \item Limitations, Conclusion, and references: revised.
 \end{itemize}
 
@@ -49,60 +49,60 @@ The revised manuscript, with all changes marked, follows this response.
 We group the Editor's report into four requests.
 \point{Editor E1: clarity and reproducibility}{Substantial revisions are needed to improve methodological clarity and reproducibility. The revision should provide missing algorithmic details and parameters.}
 \begin{reply}
-We rewrote Section III. It now defines every term the reviewers asked about. Table~I lists all parameters, and Algorithm~1 gives the order of the Stage-3 steps. Figures~3 -- 5 illustrate association, clustering, and the support of the output TSDF. Each sensor type, RGB-D or LiDAR, uses one fixed setting for all datasets and sequences. The section follows the order in which the map was built:
+Section III now defines the requested terms and update rules. Table~I lists the parameters, and Algorithm~1 specifies the order of the Stage-3 steps. Figures~3 -- 5 illustrate association, clustering, and the support of the output TSDF. We use one fixed parameter set per modality (RGB-D or LiDAR) across datasets and sequences. The presentation follows the four stages:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
-\item Stage~1 finds, for each surface vertex, the keyframe measurements that observed it;
-\item Stage~2 moves these measurements with the corrected poses and combines them into a target;
-\item Stage~3 moves the surface toward these targets by ARAP on a proxy mesh;
-\item Stage~4 rebuilds a standard TSDF from the corrected surface and the weights, signs, and observed space of the source TSDF.
+\item Stage~1 identifies the keyframe measurements that observed each surface vertex;
+\item Stage~2 transforms those measurements with the corrected poses and aggregates them into a target;
+\item Stage~3 deforms a proxy mesh toward the targets using ARAP;
+\item Stage~4 reconstructs a standard TSDF using the corrected surface and the source TSDF's weights, signs, and observed space.
 \end{itemize}
-The answers to Reviewer~2 point to each definition, and R1-3(c) reports the threshold sensitivity.
+The replies to Reviewer~2 identify the corresponding definitions; R1-3(c) reports threshold sensitivity.
 \end{reply}
 \point{Editor E2: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
-WarpVox differs from existing deformation-based methods in where the correction comes from and in what it returns (R2-S2). ElasticFusion, Kintinuous, and Kimera-PGMO deform surfels, point clouds, or meshes. WarpVox takes the corrected trajectory from an external SLAM back-end. It corrects an already fused TSDF without full reintegration and returns a standard TSDF that the mapper keeps fusing into. To our knowledge, it is the first deformation-based method to return such a TSDF (Sections I -- II).
+WarpVox differs from existing deformation-based methods in the source of its correction and the representation it produces (R2-S2). ElasticFusion, Kintinuous, and Kimera-PGMO deform surfels, point clouds, or meshes. WarpVox takes the corrected trajectory from an external SLAM back-end. It corrects a fused TSDF without full reintegration and returns a standard TSDF that supports continued fusion. To our knowledge, it is the first deformation-based method to return such a TSDF (Sections I -- II).
 
-In the submitted manuscript, we compared WarpVox with Kimera-PGMO (Section IV-C). Kimera-PGMO corrects the trajectory and the mesh together with an embedded deformation graph. On the same input mesh and trajectories, WarpVox reaches higher F@25/F@50 and a lower Chamfer distance in less than half the surface-correction time. Even its full update, including the TSDF rebuild, is faster than PGMO's surface correction alone.
+In the submitted manuscript, we compared WarpVox with Kimera-PGMO (Section IV-C). Kimera-PGMO corrects the trajectory and the mesh together with an embedded deformation graph. With the same input mesh and trajectories, WarpVox achieves higher F@25/F@50 and a lower Chamfer distance while taking less than half the surface-correction time. The full WarpVox update, including TSDF reconstruction, also takes less time than PGMO's surface correction alone.
 
-As Reviewer~2 asked, we also ran ElasticFusion on TUM, its own benchmark, and on Kimera-Multi (R2-S3). ElasticFusion is a complete surfel SLAM system of the same class. WarpVox instead corrects the TSDF of an existing mapping pipeline, for RGB-D and LiDAR alike. Fusion then continues on the corrected TSDF (R1-3(b)).
+We also evaluated ElasticFusion on TUM, its original benchmark, and on Kimera-Multi (R2-S3). ElasticFusion is a complete surfel SLAM system of the same class. WarpVox corrects the TSDF of an existing mapping pipeline using either RGB-D or LiDAR. Fusion then continues on the corrected TSDF (R1-3(b)).
 \end{reply}
 \point{Editor E3: controlled target ablation}{Isolate the benefit of the observation-derived targets through a controlled ablation.}
 \begin{reply}
-Table~V isolates this benefit. Against a baseline that replaces Stages~1 and~2 with nearest-keyframe pose transport, the observation-derived targets improve F@25 by 0.637\,pp.
+Table~V compares observation-derived targets with nearest-keyframe pose transport in place of Stages~1 and~2. The observation-derived targets improve F@25 by 0.637\,pp.
 
-The TSDF was fused from the measurements of the keyframes that observed each surface point. Using the poses before the correction, Stage~1 aims to find these measurements again for each vertex and to weight them. Stage~2 moves them with the corrected poses and combines them into the observation-derived target of Eq.~(4).
+The TSDF was fused from the measurements of the keyframes that observed each surface point. Stage~1 uses the pre-correction poses to reassociate each vertex with those measurements and assign reliability weights. Stage~2 moves them with the corrected poses and combines them into the observation-derived target of Eq.~(4).
 
-The controls in R1-3(a) and R1-3(c) split the 0.637\,pp gain:
+The controls in R1-3(a) and R1-3(c) clarify the contribution of each step:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item replacing only the measured samples of Eq.~(3) with pose transport keeps all but 0.042\,pp of the gain;
 \item limiting each vertex to 1, 4, 8, or 15 observations ($n_{\max}$) changes F@25 by at most 0.019\,pp;
 \item removing the Stage-1 gate and reliability cutoff drops F@25 below nearest-keyframe pose transport.
 \end{itemize}
-The gain comes mainly from the observations themselves: the keyframes that Stage~1 identifies as having observed each vertex.
+The largest effect comes from identifying which keyframes actually observed each vertex.
 \end{reply}
 \point{Editor E4: repeated correction and fusion}{Evaluate stability over repeated correction-and-fusion cycles.}
 \begin{reply}
-WarpVox remains stable over repeated correction and fusion (R1-3(b)). We tested five sequences with several loop closures and 15 corrections in total. The surface accuracy of WarpVox stays close to reintegration, and its TSDF accepts new measurements after every correction. Each correction finds the observations again in the keyframe measurements, so the surface stays tied to the original measurements.
+We tested repeated correction and fusion on five multi-loop-closure sequences, with 15 corrections in total (R1-3(b)). WarpVox maintains surface accuracy close to reintegration, and its corrected TSDF accepts new measurements after each correction. At each correction, the method reassociates surface vertices with the original keyframe measurements.
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
-\item F-scores compare each map with the ground truth. Right after a correction, WarpVox differs from reintegration by $+0.50$\,pp at F@25 on average, with no common trend over successive corrections.
-\item Volumetric metrics compare each map with reintegration, because no ground-truth TSDF exists. On the voxels observed in both TSDFs, the corrected TSDF stays close to reintegration. Successive corrections mainly change which voxels are observed in both.
-\item New measurements are fused with the same Voxblox update as in reintegration. They refine the regions that they observe again, and the other regions keep their corrected state. Every fusion interval raises all four volumetric metrics, and after fusion $\Delta F@25$ is $-0.01$\,pp on average.
+\item F-scores are measured against ground truth. Right after a correction, WarpVox differs from reintegration by $+0.50$\,pp at F@25 on average, with no common trend over successive corrections.
+\item Volumetric metrics use reintegration as the reference because no ground-truth TSDF is available. On the voxels observed in both TSDFs, the corrected TSDF stays close to reintegration. Successive corrections mainly change which voxels are observed in both.
+\item Both methods fuse new measurements using the same Voxblox update. New measurements refine revisited regions; other regions retain their corrected state. Every fusion interval raises all four volumetric metrics, and after fusion $\Delta F@25$ is $-0.01$\,pp on average.
 \end{itemize}
 Figure~\ref{fig:reply-cycles} in R1-3(b) shows all 25 checkpoints.
 \end{reply}
 \section*{Response to Reviewer 1}
 \point{R1-2: Stage-3 pseudocode}{The four-stage structure is easy to follow, and the introduction clearly motivates the problem. Section III-D is harder to follow because several filtering, target-adjustment, and mesh-repair operations are described in succession. Pseudocode showing their order would help.}
 \begin{reply}
-Algorithm~1 in Section III-D now gives the order of the filtering, target-adjustment, ARAP, and mesh-repair steps, and points to the definition of each step.
+Algorithm~1 in Section III-D specifies the order of filtering, target adjustment, ARAP, and mesh repair, with references to each step's definition.
 \end{reply}
 \point{R1-3(a): matched multi-keyframe pose-transport baseline}{Table IV reports a 0.637-percentage-point improvement at F@25 over nearest-keyframe pose transport. This is useful evidence, but the comparison does not clearly distinguish the benefit of measured samples from that of combining several keyframes rather than using only the nearest one.
 
 Please add a matched multi-keyframe pose-transport baseline. Keep the candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing unchanged. Instead of constructing each candidate target from the matched range sample as in Eq. (3), apply the corresponding keyframe's pre-to-post pose correction to the original source vertex, then aggregate the candidates. Paired results for the individual ablation cases would show how consistently the measured-sample formulation improves on this control.}
 \begin{reply}
 \textbf{Matched comparison.}
-We added this baseline (Section IV-E) and ran it on the ten Kimera-Multi ablation cases, at 25\,cm voxel size. It keeps the candidate keyframes, reliability weights, aggregation/trimming procedure, and downstream processing. Only the candidate targets change. Each one is the source vertex moved by its keyframe's pre-to-post pose correction, instead of the matched range sample of Eq.~(3).
+We evaluated the requested baseline on ten Kimera-Multi ablation cases at 25\,cm voxel size (Section IV-E). The baseline preserves the candidate keyframes, reliability weights, aggregation and trimming procedures, and all downstream processing. Only the candidate targets differ. Each candidate uses the source vertex transformed by its keyframe's pre-to-post pose correction rather than the matched range sample in Eq.~(3).
 
-The measured-sample formulation improves F@25 by 0.042\,pp on average, and in eight of the ten cases. The paired differences range from $-0.04$ to $+0.09$\,pp (Table~\ref{tab:reply-r1a-paired}; Section IV-E lists the same ten values).
+The measured-sample formulation improves mean F@25 by 0.042\,pp and outperforms the matched baseline in eight of ten cases. The paired differences range from $-0.04$ to $+0.09$\,pp (Table~\ref{tab:reply-r1a-paired}; Section IV-E lists the same ten values).
 
 \begin{table}[H]
 \centering\small
@@ -123,17 +123,17 @@ Mean & $+0.042$ & & \\
 \end{table}
 
 \textbf{Contribution of each step.}
-Table~V compares the observation-derived target of Eq.~(4) with nearest-keyframe pose transport. This target is the output of Stages~1 and~2 together, and it is better by 0.637\,pp at F@25. Our controls separate the two effects named in the review, and the role of the Stage-1 gate:
+Table~V compares the observation-derived target of Eq.~(4) with nearest-keyframe pose transport. This target is the output of Stages~1 and~2 together, and it is better by 0.637\,pp at F@25. Our controls distinguish the effects of measured samples, multiple keyframes, and Stage-1 association filtering:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item The measured samples of Eq.~(3) add 0.042\,pp (Table~\ref{tab:reply-r1a-paired}).
-\item The number of combined keyframes matters little: with at most 1, 4, 8, or 15 observations per vertex ($n_{\max}$), F@25 changes by at most 0.019\,pp.
-\item The Stage-1 gate and reliability cutoff add 1.13\,pp; without them, F@25 falls below nearest-keyframe pose transport (Table~\ref{tab:reply-association-gates} in R1-3(c)). Their exact values matter little: changing them within the tested range moves mean F@25 by at most 0.19\,pp.
+\item Across $n_{\max}\in\{1,4,8,15\}$ observations per vertex, F@25 varies by at most 0.019\,pp.
+\item Removing the Stage-1 gate and reliability cutoff reduces F@25 by 1.13\,pp, below nearest-keyframe pose transport (Table~\ref{tab:reply-association-gates} in R1-3(c)). Their exact values matter little: changing them within the tested range moves mean F@25 by at most 0.19\,pp.
 \end{itemize}
-The gain comes mainly from the observations themselves: the keyframes that Stage~1 identifies as having observed each vertex.
+Most of the improvement over nearest-keyframe pose transport comes from identifying the keyframes that actually observed each vertex.
 \end{reply}
 \point{R1-3(b): repeated correction and fusion}{Section IV-A already describes sequential processing with fusion resumed from the corrected volume, and Section IV-D reports volumetric consistency. However, the averages do not show how discrepancies evolve over successive correction-and-fusion cycles within a sequence. For a few existing sequences with multiple loop closures, please report the difference in GT-referenced surface scores relative to full reintegration, together with the existing volumetric-consistency metrics, over successive events. Checkpoints immediately after correction and after a specified interval of additional fusion would help distinguish the two stages. The reference should use the same measurement history and corrected poses. Since distance values are reconstructed and source-derived support and weights are transferred repeatedly, this analysis would help establish whether the approximation remains stable during continued use. Exact equivalence with reintegration is not required.}
 \begin{reply}
-We ran this test on the five ablation sequences with several loop closures, two to six each and 15 in total. WarpVox corrects the map at every loop closure, and fusion continues on the corrected map. The reference is full reintegration with the same measurement history and corrected poses. We compare the two at two checkpoints:
+We evaluated five ablation sequences with two to six loop closures each, totaling 15 corrections. WarpVox corrects the map at each loop closure, then resumes fusion on the corrected TSDF. The reference is full reintegration with the same measurement history and corrected poses. We evaluate two types of checkpoints:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item AC: immediately after each correction (15 checkpoints);
 \item AF: after the interval of additional fusion that follows, just before the next correction (10 checkpoints, 1.44 -- 599.03\,s of fusion).
@@ -149,18 +149,18 @@ Figure~\ref{fig:reply-cycles} shows all 25 checkpoints (Section IV-D and Figure~
 \end{figure}}
 
 \textbf{GT-referenced surface scores (right axis).}
-WarpVox stays close to reintegration. $\Delta F@25$ is $+0.50$\,pp on average at AC and $-0.01$\,pp at AF. At AC, it ranges from $-1.48$ to $+2.55$\,pp and shows no common trend over successive corrections. The reason is that both maps come from the same measurements. WarpVox moves the observed vertices to where their keyframe measurements land under the corrected poses. Reintegration fuses the same measurements under the same poses. Each correction finds these observations again in the original measurements, so the corrected surface stays tied to them. At AF, both maps have also fused the same new frames with the same Voxblox update, so their F-scores agree on average.
+WarpVox achieves surface accuracy close to reintegration. $\Delta F@25$ is $+0.50$\,pp on average at AC and $-0.01$\,pp at AF. At AC, it ranges from $-1.48$ to $+2.55$\,pp and shows no common trend over successive corrections. Both methods use the same measurements and corrected poses but update the maps differently. WarpVox reassociates observed vertices with their original keyframe measurements and moves them under the corrected poses. Reintegration fuses those measurements again under the corrected poses. At AF, both maps have fused the same new frames using the same Voxblox update; their F-scores agree on average.
 
 \textbf{Volumetric-consistency metrics (left axis).}
-These four metrics compare the WarpVox TSDF with the reintegrated TSDF voxel by voxel, because no ground-truth TSDF exists. Sign accuracy stays above 84\% and free-space recall above 93\% at every checkpoint. Both stay high because Stage~4 takes most signs and the observed free space from the source TSDF. Support IoU and weighted Jaccard measure whether both TSDFs contain the same observed voxels with similar weights. Successive corrections mainly change these two. After the last correction, support IoU is 72 -- 85\%.
+The four volumetric metrics compare the WarpVox and reintegrated TSDFs because no ground-truth TSDF exists. Sign accuracy stays above 84\% and free-space recall above 93\% at every checkpoint. Stage~4 preserves most source-TSDF signs and observed free space, contributing to these high values. Support IoU and weighted Jaccard measure whether both TSDFs contain the same observed voxels with similar weights. Successive corrections mainly change these two. After the last correction, support IoU is 72 -- 85\%.
 
-The two metrics change because WarpVox rebuilds the TSDF from the corrected surface, whereas reintegration fuses all measurements again. A TSDF stores more than a surface. For every voxel, it stores whether the voxel was observed, a weight, and a signed distance. The metrics count every difference in these values. So a surface can be closer to the ground truth and still agree less with reintegration. At the second correction of 1207\_sparkal1, for example, WarpVox is better than reintegration by 1.68\,pp at F@25, while its weighted Jaccard falls.
+These support metrics differ because WarpVox reconstructs the TSDF from the corrected surface, whereas reintegration fuses the full measurement history again. A TSDF records voxel observation status, integration weight, and signed distance in addition to its surface. The volumetric metrics capture differences in these quantities. Thus, improved surface accuracy against ground truth can coexist with lower volumetric agreement with reintegration. At the second correction of 1207\_sparkal1, for example, WarpVox is better than reintegration by 1.68\,pp at F@25, while its weighted Jaccard falls.
 
-The corrected TSDF keeps most weights of the source TSDF, and the Voxblox fusion update resumes on it. Continued fusion raises all four metrics in every interval. New frames restore the agreement where they revisit the map, and the other regions keep their corrected state. As the review states, exact equivalence with reintegration is not required. Over repeated correction and continued fusion, WarpVox keeps its surface accuracy close to reintegration, and its TSDF keeps accepting new measurements.
+The corrected TSDF retains most source weights and supports subsequent Voxblox fusion updates. Continued fusion raises all four metrics in every interval. New frames increase agreement in revisited regions; other regions retain their corrected state. Across repeated correction-and-fusion cycles, WarpVox maintains surface accuracy close to reintegration while continuing to integrate new measurements.
 \end{reply}
 \point{R1-3(c): reproducibility and sensitivity}{Eqs. (4)-(6) specify the aggregation and trimming rules, but I could not find the explicit function mapping the correspondence cues to alpha\_\{rj\} in Section III-B, or the numerical values of epsilon\_m and kappa in Eq. (5). Some neighbourhood definitions and thresholds for median-MAD rejection, Welsch-based target consolidation, and mesh repair in Section III-D also remain unspecified. Please provide these settings in a compact table and indicate which are fixed across datasets and voxel resolutions. The text already states that kappa is shared across modalities; the remaining settings need similar clarification. A small sensitivity test for one or two influential rejection thresholds would help assess how much the results depend on tuning.}
 \begin{reply}
-We agree that a compact table makes these settings reproducible. Section III now includes it as Table~I. The main settings are:
+Table~I in Section III consolidates the parameters needed for reproduction. The main settings are:
 \begin{center}\small
 \begin{tabular}{p{0.37\linewidth}p{0.55\linewidth}}\toprule
 Quantity & Setting\\\midrule
@@ -181,7 +181,7 @@ TSDF reconstruction & $\tau=4s$, $\rho=1.5s$, $w_{\max}=10^4$\\
 Source transport cell width & $\tau$\\\bottomrule
 \end{tabular}
 \end{center}
-All settings are fixed. Each sensor type uses the same values for every dataset and sequence. Settings given as multiples of the voxel size $s$ scale with the grid resolution.
+We use fixed parameters for each modality across all datasets and sequences. Parameters expressed as multiples of voxel size $s$ scale with grid resolution.
 
 Section III-B gives the function for $\alpha_{rj}$, which R2-B3 repeats. Section III-C gives the aggregation weights and the trimming rule (Eq.~(4)). For observation $r$ of vertex $j$, the aggregation weight is
 \[
@@ -193,16 +193,16 @@ Section III-B gives the function for $\alpha_{rj}$, which R2-B3 repeats. Section
 where $q_{rj}^+$ is the matched sensor sample moved with the corrected keyframe pose. The first target $\bar q_j$ is the weighted mean over the observations whose keyframes have a corrected pose. We keep the samples whose distance to $\bar q_j$ is at most $\max(\epsilon_m,\kappa\,\operatorname{median}_r\|q_{rj}^+-\bar q_j\|)$. Their weighted mean is the observation-derived target $v_j^*$ of Eq.~(4). If a vertex has fewer than three valid samples, we keep all of them. R2-D3 -- D4, R2-D11, and R2-D18 give the neighbourhood, rejection, and repair rules.
 
 \textbf{Sensitivity.}
-We changed one setting at a time on the ten ablation cases:
+We varied one parameter at a time on the ten ablation cases:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item the RGB-D association gate $g_0$ (0.04 and 0.16\,m) and the reliability cutoff $\alpha_{\min}$ (0 and 0.20);
 \item the Stage-2 trimming parameters $\kappa$ (1.5 and 4.0) and $\epsilon_m$ (0.01 and 0.05\,m);
 \item the Stage-3 MAD multiplier, scale floor, neighbourhood, Welsch cutoff, and repair settings.
 \end{itemize}
-Compared with the fixed setting (mean F@25 of 26.62\%), mean F@25 changes by $-0.19$ to $+0.05$\,pp. Setting $n_{\max}$ to 1, 4, 8, or 15 changes it by at most 0.019\,pp (Section IV-E).
+Relative to the fixed setting (mean F@25 of 26.62\%), the tested variations change mean F@25 by $-0.19$ to $+0.05$\,pp. Setting $n_{\max}$ to 1, 4, 8, or 15 changes it by at most 0.019\,pp (Section IV-E).
 
 \textbf{Removing the Stage-1 gate and reliability cutoff.}
-We also removed the Stage-1 gate and reliability cutoff and kept Stages~2 -- 4 and the measured samples unchanged. Mean F@25 then falls from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}). This is below nearest-keyframe pose transport (25.98\%, Table~V). Changing their values in the sweep above moves it by at most 0.19\,pp. So the results depend on whether the gate and cutoff are used, and hardly on their exact values.
+We removed the Stage-1 gate and reliability cutoff while retaining the measured samples and Stages~2 -- 4. Mean F@25 then falls from 26.62\% to 25.49\% (Table~\ref{tab:reply-association-gates}). This is below nearest-keyframe pose transport (25.98\%, Table~V). Within the tested parameter ranges, adjusting these thresholds changes mean F@25 by at most 0.19\,pp. The presence of association filtering therefore matters more than the precise thresholds tested.
 
 \begin{table}[H]
 \centering\small
@@ -220,11 +220,11 @@ Without gate and cutoff & 8.93 & 25.49 & 45.29\\
 
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
 \begin{reply}
-Yes. The 0.32\,pp figure refers to the dataset means of the F@25 difference, WarpVox minus reintegration: $+0.05$\,pp on Kimera-Multi and $-0.32$\,pp on KITTI. The abstract now says that these are dataset means. For single loop-closure events, the differences range from $-1.91$ to $+2.59$\,pp on Kimera-Multi and from $-2.03$ to $+1.80$\,pp on KITTI (Section IV-B).
+The 0.32\,pp bound refers to the dataset-mean F@25 differences (WarpVox minus reintegration): $+0.05$\,pp on Kimera-Multi and $-0.32$\,pp on KITTI. The abstract now identifies these values as dataset means. For single loop-closure events, the differences range from $-1.91$ to $+2.59$\,pp on Kimera-Multi and from $-2.03$ to $+1.80$\,pp on KITTI (Section IV-B).
 \end{reply}
 \point{R1-6: video runtime}{The video helps illustrate map correction and continued fusion. Please clarify which processing steps are included in the displayed runtimes and how they relate to the in-memory core-update times reported in the paper.}
 \begin{reply}
-The WarpVox label in the video shows the approximate core update time of Stages 1 -- 4. It has the same timing scope as the in-memory core-update times in the paper and excludes I/O and visualization. The ``bag t'' label in the Voxblox footage shows the time in the recorded sequence, not computation time.
+The video displays the approximate core-update time for WarpVox Stages~1 -- 4. This matches the in-memory core-update timing reported in the paper and excludes I/O and visualization. The ``bag t'' label in the Voxblox footage indicates recorded-sequence time, not computation time.
 \end{reply}
 \section*{Response to Reviewer 2}
 
