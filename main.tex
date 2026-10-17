@@ -474,81 +474,81 @@ Observed source support is $\Omega^-=\{x:w^-(x)>0\}$. It includes voxels with in
 
 \point{R2-E1}{What is "surface-local reconstruction/domain"? Is there a "surface-global reconstruction/domain"?}
 \begin{reply}
-It is the part of Stage~4 that rebuilds the voxels within truncation distance $\tau$ of the warped surface. It visits only the blocks that contain a warped vertex, and their 26 neighbours. There is no surface-global counterpart. Away from the surface, the second part of Stage~4 transports the observed free space of the source TSDF.
+Surface-local reconstruction is the Stage-4 step that rebuilds voxels within truncation distance $\tau$ of the warped surface. It visits blocks containing warped vertices and their 26 neighbouring blocks; no surface-global reconstruction step is used. Away from the surface, Stage~4 transports the source TSDF's observed free space.
 \end{reply}
 
 \point{R2-E2}{The first paragraph says the "sign orientation" comes from the source mesh, whereas Eq. 12 claims it is "determined separately from the source field".}
 \begin{reply}
-Both are used, with different roles. The mesh normal gives the geometric orientation. Valid samples of the source TSDF decide which side is free space (positive). The Stage-4 text and Eq.~(9) now state this rule and its fallbacks.
+Both contribute: warped-mesh normals establish geometric orientation, while valid source-TSDF samples determine which side is free space (positive). Section III-E and Eq.~(9) specify this rule and its fallback cases.
 \end{reply}
 
 \point{R2-E3}{What does "weight provides support" mean?}
 \begin{reply}
-A voxel with positive weight is observed (supported). Transferring the weight keeps both this support and its integration strength for later fusion (Section~III-E, Eq.~(8)).
+A voxel is observed (supported) when its integration weight is positive. Weight transport preserves both observation support and integration strength for subsequent fusion (Section~III-E, Eq.~(8)).
 \end{reply}
 
 \point{R2-E4}{What is the fallback branch?}
 \begin{reply}
-The fallback initializes voxels within $\rho=1.5s$ of the warped surface that have no transferred source weight. It uses the warped geometry and a prior weight in $[0,1]$, excluding open boundaries (Section~III-E).
+The fallback initializes voxels within $\rho=1.5s$ of the warped surface where no source weight is transferred. It derives their values from the warped geometry with a prior weight in $[0,1]$ and excludes open boundaries (Section~III-E).
 \end{reply}
 
 \point{R2-E5}{What is a "consistent source sample"?}
 \begin{reply}
-A trilinear source sample is valid when every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent when those voxels also share the same nonzero distance sign. Section III-E defines the two tests before Eq.~(8).
+A trilinear source sample is valid if every voxel with a nonzero interpolation coefficient has positive integration weight. It is sign-consistent if those voxels also have the same nonzero signed-distance sign. Section III-E states both tests before Eq.~(8).
 \end{reply}
 
 \point{R2-E6}{What is the difference between w\_\{tr\}\textasciicircum{}+ and w\_\{src\}\textasciicircum{}+?}
 \begin{reply}
-They are the same weight on the transferred voxels. The revision keeps only $w_{\rm src}^+$ and removes the submitted Eq.~(13). Eq.~(8) defines $w_{\rm src}^+$ once, and Eq.~(10) uses it on $\Omega_{\rm tr}$.
+Both symbols referred to the same weight on transferred voxels. We now use only $w_{\rm src}^+$: Eq.~(8) defines it, Eq.~(10) uses it on $\Omega_{\rm tr}$, and the redundant submitted Eq.~(13) has been removed.
 \end{reply}
 
 \point{R2-E7}{How is n\_f\textasciicircum{}+ defined?}
 \begin{reply}
-$n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex order of $F$; Section~III-E also defines the paired frames built from it (Eq.~(7)).
+$n_f^+$ denotes the unit normal of warped face $f=(a,b,c)$, oriented by the vertex ordering in $F$. Section III-E defines the corresponding paired frames in Eq.~(7).
 \end{reply}
 
 \point{R2-E8}{How does the algorithm determine if the closest surface feature is an open boundary?}
 \begin{reply}
-Boundary edges are incident to exactly one face. The prior is withheld when the closest point lies on such an edge or its end vertex. This keeps geometric fallback support away from open boundaries (Section~III-E, fallback paragraph).
+An edge is a boundary edge if exactly one face is incident to it. We withhold the prior when the closest surface point lies on a boundary edge or either endpoint. This excludes geometric fallback support near open boundaries (Section~III-E, fallback paragraph).
 \end{reply}
 
 \point{R2-E9}{What does "supported voxel" mean?}
 \begin{reply}
-A supported voxel has positive weight, $w>0$ (Section~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(10)).
+A supported voxel has positive integration weight ($w>0$; Section III-A). The set of supported output voxels is $\Omega^+$ (Eq.~(10)).
 \end{reply}
 
 \point{R2-E10}{What is a "fallback support"? What are "narrow samples"?}
 \begin{reply}
-\emph{Fallback support} is the set of voxels with positive fallback weight, $\Omega_{\rm fb}=\{x:w_{\rm fb}(x)>0\}$. \emph{Narrow samples} are transferred voxels within distance $\rho$ of the warped surface, now denoted $\mathcal N_{\rm tr}$ (Section~III-E).
+\emph{Fallback support} comprises voxels with positive fallback weight, $\Omega_{\rm fb}=\{x:w_{\rm fb}(x)>0\}$. \emph{Narrow samples}, now denoted $\mathcal N_{\rm tr}$, are transferred voxels within distance $\rho$ of the warped surface (Section~III-E).
 \end{reply}
 
 \point{R2-E11}{What makes a source face valid or invalid?}
 \begin{reply}
-A source face is valid if neither it nor its warped copy is degenerate, so that its paired frames can be built. Each transport cell uses the source face closest to the centroid of its observed voxels, with no distance limit. A cell whose closest face is invalid is not transported (Section~III-E).
+A source face is valid if both it and its warped counterpart are nondegenerate, allowing their paired frames to be constructed. Each transport cell uses the source face nearest the centroid of its observed voxels, without a distance cutoff. Cells whose nearest face is invalid are not transported (Section~III-E).
 \end{reply}
 
 \subsection*{Sec. III-F}
 
 \point{R2-F1}{What are C\_\{def\} and C\_\{vol\}?}
 \begin{reply}
-$C_{\rm def}$ is the Stage-3 cost of deformation, including proxy construction, target consolidation, ARAP, and transfer or repair. $C_{\rm vol}$ is the Stage-4 cost of TSDF reconstruction and free-space transport (Section~III-F).
+$C_{\rm def}$ denotes the Stage-3 deformation cost (proxy construction, target consolidation, ARAP, and displacement transfer or repair). $C_{\rm vol}$ denotes the Stage-4 cost (TSDF reconstruction and free-space transport) (Section~III-F).
 \end{reply}
 
 \subsection*{Sec. IV-A}
 
 \point{R2-IVA1}{Fully define F@10/25/50. Are these F1-score at 10/25/50cm thresholds?}
 \begin{reply}
-Yes. The submitted Section IV-A specifies bidirectional nearest-neighbour tests at 10/25/50\,cm. Explicitly, $F=100\cdot2PR/(P+R)$, where $P$ and $R$ are the fractions of predicted and reference surface points, respectively, within the threshold of the other surface.
+F@10/25/50 are F1-scores computed from bidirectional nearest-neighbour tests at 10, 25, and 50\,cm, as specified in Section IV-A. Specifically, $F=100\cdot2PR/(P+R)$, where $P$ and $R$ are the fractions of predicted and reference surface points within the specified distance of the other surface, respectively.
 \end{reply}
 
 \point{R2-IVA2}{Please also add Chamfer distance, a standard metric for geometric similarity.}
 \begin{reply}
-We computed the symmetric, unsquared Chamfer distance for all reconstruction baselines and the PGMO comparison:
+We added the symmetric, unsquared Chamfer distance for every reconstruction baseline and the PGMO comparison:
 \[
 \mathrm{CD}=\frac12\left(\frac{1}{|\mathcal P|}\sum_{p\in\mathcal P}d(p,\mathcal G)
 +\frac{1}{|\mathcal G|}\sum_{g\in\mathcal G}d(g,\mathcal P)\right).
 \]
-Here $\mathcal P$ and $\mathcal G$ are the predicted and reference point sets, and $d(p,\mathcal G)$ is the nearest-neighbour distance. The table averages per-event, untruncated distances in centimetres over the same cases as the F-scores.
+Here $\mathcal P$ and $\mathcal G$ denote predicted and reference point sets, and $d(p,\mathcal G)$ is the nearest-neighbour distance from $p$ to $\mathcal G$. The table reports mean per-event, untruncated distances in centimetres over the same cases used for the F-scores.
 \begin{center}\small
 \begin{tabular}{lrr}\toprule
 Method & Kimera-Multi (39) & KITTI (12)\\\midrule
@@ -560,17 +560,17 @@ Voxblox reintegration & 101.9 & 67.3\\
 WarpVox & 103.1 & 68.8\\\bottomrule
 \end{tabular}
 \end{center}
-WarpVox stays within 1.5\,cm of reintegration on both datasets and below every other correction baseline. On the ten-sequence corrected-surface comparison (Table~IV), CD is 309.6\,cm for the input mesh and 152.9\,cm for WarpVox. Kimera-PGMO reaches 179.0\,cm with one-shot correction, the stronger of its two modes, and 183.8\,cm online.
+WarpVox differs from reintegration by at most 1.5\,cm on each dataset and has a lower Chamfer distance than the other correction baselines. On the ten-sequence corrected-surface comparison (Table~IV), CD is 309.6\,cm for the input mesh and 152.9\,cm for WarpVox. Kimera-PGMO reaches 179.0\,cm in its stronger one-shot mode and 183.8\,cm in online mode.
 \end{reply}
 
 \point{R2-IVA3}{Table II shows inconsistent relative portions between different datasets. Please discuss why some datasets incur larger time in, e.g., association, whereas other datasets incur larger time in target estimation.}
 \begin{reply}
-Stage times depend on different workloads: association processes candidate vertex -- keyframe pairs, target construction processes retained observations, and deformation/reconstruction depend on surface and volume size. RGB-D queries every source vertex, whereas LiDAR queries one per occupied 0.5\,m cell and searches spherical-image neighbourhoods. These modality and map-size differences affect the stage proportions. 
+The stages have different cost drivers: association processes candidate vertex--keyframe pairs, target construction processes retained observations, and deformation and reconstruction depend on mesh and volume size. RGB-D queries every source vertex; LiDAR queries one vertex per occupied 0.5\,m cell and searches spherical-image neighbourhoods. Thus, a sequence with many candidate pairs can spend more time on association even when relatively few observations survive, whereas more retained observations increase target-construction cost. Map size and sensing modality further change the relative stage times. 
 \end{reply}
 
 \point{R2-IVA4}{Table III: What are "ten bags"?}
 \begin{reply}
-A ``bag'' is the ROS recording of one robot's Kimera-Multi sequence. Table~IV compares the final states of ten such sequences (10/14: acl\_jackal2, sparkal1, sparkal2; 12/07: acl\_jackal2, hathor, sparkal1; 12/08: acl\_jackal2, apis, sobek, thoth). Section IV-A defines them as the set shared by the PGMO comparison, repeated correction, and ablation.
+A ``bag'' denotes one robot's recorded ROS sequence in Kimera-Multi. Table~IV compares the final states of ten such sequences (10/14: acl\_jackal2, sparkal1, sparkal2; 12/07: acl\_jackal2, hathor, sparkal1; 12/08: acl\_jackal2, apis, sobek, thoth). Section IV-A identifies this ten-sequence set as the one shared by the PGMO comparison, repeated-correction experiment, and ablation studies.
 \end{reply}
 
 \bigskip
