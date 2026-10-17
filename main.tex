@@ -327,12 +327,12 @@ The reliability is
 \alpha_{rj}=\frac{|\cos\phi_{rj}|}{1+z^-_{rj}/z_0}
 \exp(-\delta_{rj}/\sigma_g)\exp(-|z^m_{rj}-z^-_{rj}|/\sigma_z).
 \]
-Here $\phi$ is the incidence angle, $\delta$ the 3-D correspondence residual, and $z^-,z^m$ the projected-vertex and measured depth/range. The last exponential applies to RGB-D only. Section III-B defines these quantities, and the parameter table gives the constants.
+Here $\phi$ is the incidence angle, $\delta$ the 3-D correspondence residual, and $z^-,z^m$ the projected-vertex and measured depth/range. The last exponential applies to RGB-D only. Section III-B defines these quantities, and Table~I gives the constants.
 \end{reply}
 
 \point{R2-B4}{What are the criteria for retaining a candidate? Can multiple candidates be retained? What if none are retained?}
 \begin{reply}
-A valid sample must pass the geometric gate and, for RGB-D, the reliability cutoff. Each vertex retains up to 15 candidates; with none, it follows the surface deformation without a measured target (Section~III-B).
+A valid sample must pass the geometric gate and, for RGB-D, the reliability cutoff. Each vertex retains at most 15 candidates. A vertex with none receives no measured target and follows the Stage-3 surface deformation (Section~III-B).
 \end{reply}
 
 \point{R2-B5}{Is m\_\{rj\} a point or an image?}
@@ -386,7 +386,7 @@ A control is rejected when
 \[
 e_j>\mu+1.5\max(1.4826\,\mathrm{MAD},0.05\,\mathrm{m}).
 \]
-Here MAD is the median absolute deviation; Section III-D(a), the parameter table, and Algorithm 1 specify the test, settings, and execution order.
+Here MAD is the median absolute deviation. Section III-D(a), Table~I, and Algorithm~1 specify the test, settings, and execution order.
 \end{reply}
 
 \point{R2-D5}{What does "statistically isolated control" mean? Do you mean outliers?}
@@ -462,7 +462,7 @@ Section III-D(f) defines
 \xi^{\rm A}=\frac{A^+}{A^-},\qquad
 \xi^{\rm asp}=\frac{(\ell^+_{\max})^2}{2A^+},
 \]
-where $\ell$ and $A$ are edge length and face area, and $-/+$ denote source/warped geometry. A face is flagged at $\xi^{\rm e}\ge3$, $\xi^{\rm A}\ge6$, or $\xi^{\rm asp}\ge20$ with $\ell^+_{\max}\ge0.5$\,m. These bounds are listed in the parameter table.
+where $\ell$ and $A$ are edge length and face area, and $-/+$ denote source/warped geometry. A face is flagged at $\xi^{\rm e}\ge3$, $\xi^{\rm A}\ge6$, or $\xi^{\rm asp}\ge20$ with $\ell^+_{\max}\ge0.5$\,m. Table~I lists these bounds.
 \end{reply}
 
 \point{R2-D19}{What does "observed support" mean?}
@@ -504,22 +504,22 @@ They are the same weight on the transferred voxels. The revision keeps only $w_{
 
 \point{R2-E7}{How is n\_f\textasciicircum{}+ defined?}
 \begin{reply}
-$n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex order of $F$; Section~III-E also defines the paired frames built from it (Eq.~(7)).
+$n_f^+$ is the unit normal of warped face $f=(a,b,c)$, oriented by the vertex order of $F$. Section~III-E also defines the paired frames built from it (Eq.~(7)).
 \end{reply}
 
 \point{R2-E8}{How does the algorithm determine if the closest surface feature is an open boundary?}
 \begin{reply}
-Boundary edges are incident to exactly one face. The prior is withheld when the closest point lies on such an edge or its end vertex. This keeps geometric fallback support away from open boundaries (Section~III-E, fallback paragraph).
+An edge is a boundary edge if exactly one face is incident to it. We withhold the prior when the closest surface point lies on a boundary edge or either endpoint. This keeps geometric fallback support away from open boundaries (Section~III-E, fallback paragraph).
 \end{reply}
 
 \point{R2-E9}{What does "supported voxel" mean?}
 \begin{reply}
-A supported voxel has positive weight, $w>0$ (Section~III-A); $\Omega^+$ is the set of supported output voxels (Eq.~(10)).
+A supported voxel has positive weight, $w>0$ (Section~III-A). The set of supported output voxels is $\Omega^+$ (Eq.~(10)).
 \end{reply}
 
 \point{R2-E10}{What is a "fallback support"? What are "narrow samples"?}
 \begin{reply}
-\emph{Fallback support} is the set of voxels with positive fallback weight, $\Omega_{\rm fb}=\{x:w_{\rm fb}(x)>0\}$. \emph{Narrow samples} are transferred voxels within distance $\rho$ of the warped surface, now denoted $\mathcal N_{\rm tr}$ (Section~III-E).
+\emph{Fallback support} is the set of voxels with positive fallback weight, $\Omega_{\rm fb}=\{x:w_{\rm fb}(x)>0\}$. \emph{Narrow samples}, now denoted $\mathcal N_{\rm tr}$, are transferred voxels within distance $\rho$ of the warped surface (Section~III-E).
 \end{reply}
 
 \point{R2-E11}{What makes a source face valid or invalid?}
@@ -560,7 +560,7 @@ Voxblox reintegration & 101.9 & 67.3\\
 WarpVox & 103.1 & 68.8\\\bottomrule
 \end{tabular}
 \end{center}
-WarpVox stays within 1.5\,cm of reintegration on both datasets and below every other correction baseline. On the ten-sequence corrected-surface comparison (Table~IV), CD is 309.6\,cm for the input mesh and 152.9\,cm for WarpVox. Kimera-PGMO reaches 179.0\,cm with one-shot correction, the stronger of its two modes, and 183.8\,cm online.
+WarpVox differs from reintegration by at most 1.5\,cm on each dataset and has a lower Chamfer distance than the other correction baselines. On the ten-sequence corrected-surface comparison (Table~IV), CD is 309.6\,cm for the input mesh and 152.9\,cm for WarpVox. Kimera-PGMO reaches 179.0\,cm with one-shot correction, the stronger of its two modes, and 183.8\,cm online.
 \end{reply}
 
 \point{R2-IVA3}{Table II shows inconsistent relative portions between different datasets. Please discuss why some datasets incur larger time in, e.g., association, whereas other datasets incur larger time in target estimation.}
