@@ -18,9 +18,9 @@
 {\Large\bfseries WarpVox: Response to the Editor and Reviewers}\\[5pt]
 {Submission 26-4628 --- Revision response}
 \end{center}
-{\small Tables and figures numbered R1, R2, etc. belong to this response. Table numbers in the comments refer to the submitted manuscript; with the new parameter table, its Tables I -- IV are Tables II -- V of the revision.}
+{\small Tables and figures numbered R1, R2, etc. belong to this response. Table numbers in the comments refer to the submitted manuscript; with the new parameter table, its Tables I -- IV are Tables II -- V of the revision.} MORE SIMLE TOO COMPLEX 
 
-Dear Editor and reviewers,
+Dear Editor and Reviewers,
 
 Thank you for the detailed comments. We have rewritten the Method section and completed the additional evaluations reported below. The response covers:
 \begin{itemize}[nosep,leftmargin=*]
@@ -59,7 +59,7 @@ The parameter table lists all settings, which are fixed within each modality acr
 \end{reply}
 \point{Editor E2: relation to deformation-based approaches}{Better establish the contribution relative to existing deformation-based approaches.}
 \begin{reply}
-WarpVox differs from existing deformation-based approaches in what the correction returns and where it comes from, not in the surface primitive (R2-S2). ElasticFusion, Kintinuous, and Kimera-PGMO correct surfels, point clouds, or meshes; to our knowledge, WarpVox is the first to return the corrected map as a native, fusion-ready TSDF, applying trajectory corrections from an external SLAM back-end to an already fused TSDF without full reintegration (Sections I -- II).
+WarpVox differs from existing deformation-based approaches in what the correction returns and where it comes from, not in the surface primitive (R2-S2). ElasticFusion, Kintinuous, and Kimera-PGMO correct surfels, point clouds, or meshes. To our knowledge, WarpVox is the first to return the corrected map as a native, fusion-ready TSDF, applying trajectory corrections from an external SLAM back-end to an already fused TSDF without full reintegration (Sections I -- II).
 
 The comparison with surface-deformation methods is part of the submitted evaluation: Section IV-C (Table~III in the submitted manuscript; Table~IV in the revision) compares WarpVox with Kimera-PGMO, which corrects the trajectory and mesh jointly through an embedded deformation graph, and WarpVox achieves higher F@25/F@50 and lower Chamfer distance in less than half the surface-correction time. Its complete update, including native-TSDF reconstruction, is faster than PGMO's surface correction alone.
 
@@ -82,7 +82,7 @@ The gain comes mainly from the observations themselves, the keyframes that Stage
 WarpVox remains stable in surface accuracy over repeated correction and fusion, on five multi-loop sequences with 15 corrections in total, and its TSDF supports continued fusion after every correction. Each correction recovers the observations again from the keyframe measurements, anchoring the surface to the original measurements.
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
 \item The F-scores compare each map with the ground truth: after correction, WarpVox differs from reintegration by $+0.50$\,pp at F@25 on average, with no common trend over successive corrections.
-\item The volumetric metrics compare each map with reintegration, used as the reference since no ground-truth TSDF exists; within the domain the two volumes share, the corrected TSDF stays close to reintegration, and the differences that successive corrections introduce lie mainly in the extent of this domain.
+\item The volumetric metrics compare each map with reintegration, used as the reference since no ground-truth TSDF exists. Within the domain the two volumes share, the corrected TSDF stays close to reintegration, and the differences that successive corrections introduce lie mainly in the extent of this domain.
 \item New measurements are integrated with the same Voxblox update as in reintegration and refine the earlier regions they revisit, while unvisited regions keep their corrected state: every continued-fusion interval raises all four volumetric metrics, and $\Delta F@25$ averages $-0.01$\,pp after fusion.
 \end{itemize}
 Figure~\ref{fig:reply-cycles} in R1-3(b) shows all 25 checkpoints.
@@ -223,7 +223,7 @@ All association gates removed & 8.93 & 25.49 & 45.29\\
 
 \point{R1-4: dataset means and event-level differences}{The abstract's statement about remaining within 0.32 percentage points of reintegration at F@25 appears to refer to the dataset means in Table I. Please make this explicit unless the same bound is established for individual loop events. Case-level differences would make occasional deteriorations visible alongside the mean improvements.}
 \begin{reply}
-As the reviewer notes, the 0.32\,pp figure refers to the dataset-mean F@25 differences (WarpVox minus reintegration): $+0.05$\,pp on Kimera-Multi and $-0.32$\,pp on KITTI. We explicitly identify these as dataset means in the revised abstract. Across individual loop-closure events, the differences range from $-2.91$ to $+2.59$\,pp on Kimera-Multi and from $-3.03$ to $+1.80$\,pp on KITTI.
+As the reviewer notes, the 0.32\,pp figure refers to the dataset-mean F@25 differences (WarpVox minus reintegration): $+0.05$\,pp on Kimera-Multi and $-0.32$\,pp on KITTI. We explicitly identify these as dataset means in the revised abstract. Across individual loop-closure events, the differences range from $-1.91$ to $+2.59$\,pp on Kimera-Multi and from $-2.03$ to $+1.80$\,pp on KITTI.
 \end{reply}
 \point{R1-6: video runtime}{The video helps illustrate map correction and continued fusion. Please clarify which processing steps are included in the displayed runtimes and how they relate to the in-memory core-update times reported in the paper.}
 \begin{reply}
