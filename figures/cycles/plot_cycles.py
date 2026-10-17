@@ -109,7 +109,7 @@ for name, rows in SEQ:
     ax.scatter([a for a, k in zip(x, isA) if not k], [50 + 50 / 6 * b for b, k in zip(y, isA) if not k], s=9,
                facecolor="white", edgecolor=INK, lw=0.7, zorder=3)
     ax.text((x[0] + x[-1]) / 2, 102, name, ha="center", va="bottom", fontsize=5.6, color=INK)
-    xt += x; xl += labels
+    xt += x; xl += [("AC" if l.startswith("A") else "AF") + l[1:] for l in labels]  # AC: after correction, AF: after additional fusion
     pos = x[-1] + 1 + GAP
 
 ax.axhline(50, color=INK2, lw=0.6, ls=(0, (3, 2)), zorder=1)
