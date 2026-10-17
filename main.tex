@@ -231,44 +231,44 @@ The video displays the approximate core-update time for WarpVox Stages~1 -- 4. T
 
 \point{R2-S1: Methodological clarity and reproducibility}{Most importantly, there are many inconsistent and vague descriptions that make it impossible for a reader to reproduce the method based on the manuscript alone. There are many loose and vague descriptions of major concepts that warrant a clear mathematical definition (e.g., ``supported voxels'', ``controlled voxel'', ``F@10/25/50''), vacuous/undefined notations (``w\_\{tr\}\textasciicircum{}+ = w\_\{src\}\textasciicircum{}\{+\}'' in Eq. 13, ``n\_f\textasciicircum{}+'' not defined), and seemingly inconsistent descriptions. These make it impossible to judge the technical correctness of the proposed method.}
 \begin{reply}
-Thank you for the detailed questions below. Section III now states the definitions and update rules explicitly. Its parameter table collects all settings, and Algorithm~1 gives the order of the Stage-3 steps. The examples named here are answered in R2-E9 (supported voxels), R2-D10 (controlled vertices), R2-IVA1 (F@10/25/50), R2-E6 ($w_{\rm tr}^+$), R2-E7 ($n_f^+$), and R2-E2 (sign orientation).
+Section III now gives explicit definitions and update rules for the concepts raised in this review. Table~I collects the parameters, and Algorithm~1 specifies the sequence of Stage-3 operations. The specific terms and symbols are addressed in R2-E9 (supported voxels), R2-D10 (controlled vertices), R2-IVA1 (F@10/25/50), R2-E6 ($w_{\rm tr}^+$), R2-E7 ($n_f^+$), and R2-E2 (sign orientation).
 \end{reply}
 \point{R2-S2: Conceptual distinction from ElasticFusion}{In terms of the method, the authors do not demonstrate a clear conceptual novelty relative to ElasticFusion. ElasticFusion uses surfels to compute and apply ARAP deformations based on map-to-frame pose estimates. The difference seems to be the use of triangles in place of surfels for computing the deformations, and possibly the many clustering and filtering steps that are incomprehensible due to vague descriptions.}
 \begin{reply}
-The difference is not the use of triangles in place of surfels. It is where the correction comes from and what the correction returns.
+The distinction lies in the source of deformation constraints and the resulting map representation, rather than the choice of triangles over surfels.
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
-\item \emph{Where the correction comes from.} ElasticFusion derives its deformation constraints from local and global surface registration inside its own surfel SLAM system. So its map is corrected only by registrations that the system accepts itself. WarpVox takes the trajectory correction from a separate SLAM back-end. It associates the stored keyframe measurements with the fused surface under the old poses. It then moves them with the corrected poses to obtain the deformation targets.
-\item \emph{What the correction returns.} ElasticFusion, Kintinuous, and Kimera-PGMO return corrected surfels, point clouds, or meshes. WarpVox returns a standard TSDF. The mesh is only an intermediate step. Stage~4 combines the corrected mesh with the weights, support, sign, and free space of the source TSDF. The mapper can then keep fusing into the result and apply later corrections (R1-3(b)). To our knowledge, WarpVox is the first deformation-based method that returns such a TSDF.
+\item \emph{Where the correction comes from.} ElasticFusion derives deformation constraints from local and global surface registration within its surfel SLAM system; map correction therefore depends on its own accepted registrations. WarpVox instead receives a corrected trajectory from an external SLAM back-end. It associates stored keyframe measurements with the fused surface under the original poses, then transforms those measurements using the corrected poses to construct deformation targets.
+\item \emph{What the correction returns.} ElasticFusion, Kintinuous, and Kimera-PGMO return corrected surfels, point clouds, or meshes. WarpVox returns a standard TSDF. The mesh serves as an intermediate representation. Stage~4 combines the corrected mesh with the weights, support, sign, and free space of the source TSDF. The resulting volume supports continued fusion and subsequent corrections (R1-3(b)). To our knowledge, WarpVox is the first deformation-based method that returns such a TSDF.
 \end{itemize}
-In the released ElasticFusion code, the option \texttt{-p} replaces per-frame tracking with given poses. Loop closure stays on, and its deformation constraints still come from ElasticFusion's own registrations. So a later revision of the trajectory cannot reach the already fused map. WarpVox provides this step for an existing TSDF.
+In the released ElasticFusion code, \texttt{-p} supplies external per-frame poses but leaves loop closure enabled; deformation constraints still originate from ElasticFusion's own registrations. The system therefore does not apply a later external trajectory revision to an already fused map. WarpVox provides this step for an existing TSDF.
 
-Section III-D defines the clustering and filtering steps, Algorithm~1 gives their order, and Figure~4 illustrates them (R2-G2, R2-D1 -- D19).
+Section III-D defines clustering and filtering, Algorithm~1 specifies their order, and Figure~4 illustrates the process (R2-G2, R2-D1 -- D19).
 \end{reply}
 \point{R2-S3: ElasticFusion evaluation}{Although deformation-based approaches are not new, as is the case with ElasticFusion, the baselines are either reintegration-based or submap-based. Therefore, I suggest clarifying the conceptual difference to ElasticFusion, and comparing performance against ElasticFusion, rather than VoxBlox reintegration or VoxGraph.}
 \begin{reply}
-We agree that WarpVox should be compared with surface-deformation methods. R2-S2 gives the conceptual difference to ElasticFusion. In the submitted manuscript, we compared WarpVox with Kimera-PGMO under the same input mesh and trajectories to isolate the correction method.
+We compare WarpVox with surface-deformation methods in two settings. Kimera-PGMO uses the same input mesh and trajectories, isolating the correction method; R2-S2 explains the conceptual distinction from ElasticFusion.
 
-ElasticFusion represents the methods that the reviewer asks about. As requested, we also ran ElasticFusion as a complete system, as in its own paper (Section IV-C). We used TUM fr3/long\_office\_household and ten Kimera-Multi sequences:
+We also evaluated ElasticFusion as a complete SLAM system, following its original evaluation setting (Section IV-C). We used TUM fr3/long\_office\_household and ten Kimera-Multi sequences:
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=2pt]
-\item TUM is ElasticFusion's own room-scale benchmark. Our ElasticFusion setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table~1 of the ElasticFusion paper. We evaluate at 1, 2, and 5\,cm against a reference reconstructed from RGB-D measurements with motion-capture poses. ElasticFusion obtains 62.77\% F@2 and 3.69\,cm Chamfer distance, against 72.13\% and 2.82\,cm for WarpVox, which corrects Voxblox with the ORB-SLAM3 trajectory as in Section IV-B.
-\item On the larger Kimera-Multi sequences, we compare at the last evaluated loop event of each sequence. ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m, and its map reaches 1.98\% F@25.
+\item TUM is a room-scale benchmark used in the original ElasticFusion paper. Our ElasticFusion setup reaches an absolute trajectory error (ATE) RMSE of 1.80\,cm, close to the 1.7\,cm reported in Table~1 of the ElasticFusion paper. We evaluate at 1, 2, and 5\,cm thresholds against a reference reconstructed from RGB-D measurements using motion-capture poses. ElasticFusion obtains 62.77\% F@2 and 3.69\,cm Chamfer distance, against 72.13\% and 2.82\,cm for WarpVox, which corrects Voxblox with the ORB-SLAM3 trajectory as in Section IV-B.
+\item On Kimera-Multi, we compare the final evaluated loop-closure event of each sequence. ElasticFusion's own tracking and loop closure accumulate a mean ATE of 115.8\,m, and its map reaches 1.98\% F@25.
 \end{itemize}
-These results compare whole systems. ElasticFusion corrects its map with its own registrations (R2-S2). WarpVox applies the trajectory correction of the SLAM system in use. ElasticFusion accepts no later trajectory revision, so the correction method itself is compared with Kimera-PGMO. Kimera-PGMO is a more recent representative of this class. Like ElasticFusion, it uses an embedded deformation graph, but it takes external trajectory corrections. WarpVox improves F@25/F@50 by 0.26/0.91\,pp and lowers the Chamfer distance from 179.0 to 152.9\,cm (Section IV-C). It also corrects the surface $2.34\times$ faster. WarpVox then rebuilds the TSDF in Stage~4. Even this full update takes 4.792\,s, less than PGMO's 8.231\,s. The rebuilt surface is still better than PGMO at F@25/F@50.
+These are whole-system comparisons: ElasticFusion corrects its map from its own registrations (R2-S2), whereas WarpVox applies corrections from an external SLAM trajectory. Because ElasticFusion does not incorporate subsequent external trajectory revisions, we use Kimera-PGMO for the controlled comparison of correction methods. Kimera-PGMO also uses an embedded deformation graph but accepts external trajectory corrections. WarpVox improves F@25/F@50 by 0.26/0.91\,pp and lowers the Chamfer distance from 179.0 to 152.9\,cm (Section IV-C). WarpVox's surface correction is $2.34\times$ faster. Including Stage-4 TSDF reconstruction, its full update takes 4.792\,s, compared with 8.231\,s for PGMO surface correction alone. The rebuilt surface is still better than PGMO at F@25/F@50.
 
-Voxblox reintegration and Voxgraph complement these comparisons in Section IV-B, because WarpVox returns a TSDF. Reintegration rebuilds the same kind of TSDF from the same measurements and corrected poses, so it serves as the reference. Voxgraph is the TSDF-based alternative. It corrects drift through rigid submaps.
+Section IV-B adds Voxblox reintegration and Voxgraph as TSDF-based comparisons. Reintegration provides the reference by rebuilding the same type of TSDF from the same measurements and corrected poses. Voxgraph corrects drift through rigid TSDF submaps.
 
-WarpVox takes the trajectory correction of a separate SLAM system. It corrects the TSDF of an existing mapping pipeline for RGB-D and LiDAR alike, which suits the growing scale and sensing of today's mapping data.
+WarpVox applies corrections from a separate SLAM system to the TSDF of an existing RGB-D or LiDAR mapping pipeline.
 \end{reply}
 \subsection*{General}
 
 \point{R2-G1}{Please expand the acronym on first use.}
 \begin{reply}
-The revision expands abbreviations on first use in both the abstract and the main text. Standard image metrics (PSNR, MS-SSIM, LPIPS) keep their common names.
+The abstract and main text now expand abbreviations on first use, except for standard image-metric names (PSNR, MS-SSIM, and LPIPS).
 \end{reply}
 
 \point{R2-G2}{Illustrate the clustering, association, and different classes of "support" graphically.}
 \begin{reply}
-We added three illustrations to Section III, Figures~3 -- 5, reproduced in Figure~\ref{fig:reply-mechanisms}: (a) observation association, (b) component-aware clustering, and (c) transferred, fallback, and free-space support.
+Figures~3 -- 5 in Section III illustrate (a) observation association, (b) component-aware clustering, and (c) transferred, fallback, and free-space support. They are reproduced in Figure~\ref{fig:reply-mechanisms}.
 \end{reply}
 
 \begin{figure}[H]
@@ -290,93 +290,93 @@ We added three illustrations to Section III, Figures~3 -- 5, reproduced in Figur
 
 \point{R2-A1}{How are TSDF and weight field represented? Regular 3D grid?}
 \begin{reply}
-Yes. Voxblox stores distance and weight at each voxel of a regular 3-D grid, allocated sparsely in blocks. Section III-A now states this representation explicitly.
+Voxblox stores a signed distance and integration weight per voxel on a regular 3-D grid, with sparse block allocation. Section III-A now states this representation explicitly.
 \end{reply}
 
 \point{R2-A2}{V\textasciicircum{}- and F are not defined.}
 \begin{reply}
-The submitted Section~III-A introduces $\mathcal M^-=(V^-,F)$. The revision explicitly identifies $V^-$ as the vertex positions and $F$ as triangles stored as vertex-index triples.
+Section III-A now defines $\mathcal M^-=(V^-,F)$, where $V^-$ contains vertex positions and $F$ contains triangular faces represented by vertex-index triples.
 \end{reply}
 
 \point{R2-A3}{What do "active TSDF cells" mean? Cells around the zero-level set?}
 \begin{reply}
-Yes. They are the Marching-Cubes cells that contribute triangles to $\mathcal M^-$, i.e., the cells that the zero-level set crosses. The submitted Section~III-A defines them, and the revision repeats this definition in the cost analysis.
+Active TSDF cells are Marching-Cubes cells crossed by the zero-level set that contribute triangles to $\mathcal M^-$. Section III-A and the cost analysis now use this explicit definition.
 \end{reply}
 
 \point{R2-A4}{What does "modality-native" mean?}
 \begin{reply}
-RGB-D depth images and spherical LiDAR range images, as specified after the submitted Eq.~(1). The revision replaces ``modality-native'' with these explicit names.
+The term refers to RGB-D depth images and spherical LiDAR range images. We replace ``modality-native'' with these explicit terms.
 \end{reply}
 
 \subsection*{Sec. III-B}
 
 \point{R2-B1}{What kind of spatial indexing scheme allows storing/retrieving visibility relationship between vertices and sensors?}
 \begin{reply}
-A $k$-d tree (RGB-D) or a grid (LiDAR) retrieves nearby keyframe centres under the pre-correction poses. The search radius is 7.2 -- 7.4\,m for RGB-D (the 5\,m viewing frustum, depending on camera intrinsics) and 25\,m for LiDAR. The index only retrieves candidates. Projection and the geometric gate then decide which keyframes observed the vertex (Section~III-B).
+A $k$-d tree for RGB-D or a spatial grid for LiDAR retrieves nearby keyframe centres using pre-correction poses. The search radius is 7.2 -- 7.4\,m for RGB-D (the 5\,m viewing frustum, depending on camera intrinsics) and 25\,m for LiDAR. The index retrieves candidate keyframes; projection and the geometric gate determine whether each candidate observed the vertex (Section~III-B).
 \end{reply}
 
 \point{R2-B2}{What does it mean to "sample the projected depth"? Do you mean get the closest?}
 \begin{reply}
-For LiDAR, yes: we take the return closest in 3-D to the projected vertex, within a $3\times3$ pixel window. For RGB-D, we interpolate the depth bilinearly from the four pixels around the projected position. At least two of these pixels must be valid. We then back-project the depth along the same ray.
+For LiDAR, we select the 3-D return closest to the projected vertex within a $3\times3$-pixel window. For RGB-D, we bilinearly interpolate depth from the four surrounding pixels, requiring at least two valid values, then back-project along the corresponding ray.
 \end{reply}
 
 \point{R2-B3}{What is the exact formula for association quality, \textbackslash{}alpha\_\{rj\}?}
 \begin{reply}
-The reliability is
+The association reliability is
 \[
 \alpha_{rj}=\frac{|\cos\phi_{rj}|}{1+z^-_{rj}/z_0}
 \exp(-\delta_{rj}/\sigma_g)\exp(-|z^m_{rj}-z^-_{rj}|/\sigma_z).
 \]
-Here $\phi$ is the incidence angle, $\delta$ the 3-D correspondence residual, and $z^-,z^m$ the projected-vertex and measured depth/range. The last exponential applies to RGB-D only. Section III-B defines these quantities, and the parameter table gives the constants.
+Here $\phi$ is the incidence angle, $\delta$ the 3-D correspondence residual, and $z^-,z^m$ the projected-vertex and measured depth/range. The final exponential applies only to RGB-D. Section III-B defines the variables, and Table~I lists the constants.
 \end{reply}
 
 \point{R2-B4}{What are the criteria for retaining a candidate? Can multiple candidates be retained? What if none are retained?}
 \begin{reply}
-A valid sample must pass the geometric gate and, for RGB-D, the reliability cutoff. Each vertex retains up to 15 candidates; with none, it follows the surface deformation without a measured target (Section~III-B).
+A sample must pass the geometric gate and, for RGB-D, the reliability cutoff. Each vertex retains at most 15 candidates. A vertex with none receives no measured target and follows the Stage-3 surface deformation (Section~III-B).
 \end{reply}
 
 \point{R2-B5}{Is m\_\{rj\} a point or an image?}
 \begin{reply}
-$m_{rj}\in\mathbb R^3$ is the sampled sensor-frame point returned by $\mathcal S_m$ in the submitted Eq.~(2); $D_r$ is the range image.
+$m_{rj}\in\mathbb R^3$ denotes the sampled point in the sensor frame, returned by $\mathcal S_m$ in Eq.~(2) of the submission; $D_r$ denotes the range image.
 \end{reply}
 
 \subsection*{Sec. III-C}
 
 \point{R2-C1}{What do RGB-D/LIDAR "records" mean? Are these just frames? Also, why are RGB-D associated with timestamp but LIDAR with poses?}
 \begin{reply}
-``Records'' refer to keyframe observations: RGB-D depth images or LiDAR scans. Both use the corresponding corrected pose; RGB-D retrieves it by timestamp, with interpolation when needed, and LiDAR by scan index (Section~III-C).
+``Records'' means keyframe observations: RGB-D depth images or LiDAR scans. Both use corrected poses. RGB-D retrieves poses by timestamp, interpolating when needed; LiDAR retrieves them by scan index (Section~III-C).
 \end{reply}
 
 \point{R2-C2}{What if there are no candidates r satisfying Eq. 5?}
 \begin{reply}
-Then the vertex receives no target and follows the Stage-3 deformation, like an unobserved vertex (Section~III-C). The threshold with $\kappa=2.5$ keeps at least half of any nonempty candidate set. So this happens only when none of the vertex's observations has a corrected pose. That is the case when all its keyframes lie outside the corrected trajectory or in an interpolation gap longer than three times the median spacing.
+A vertex with no surviving candidates receives no target and follows the Stage-3 deformation (Section~III-C). With $\kappa=2.5$, the trimming threshold retains at least half of a nonempty candidate set. Thus, this case arises only when none of the vertex's observations has a corrected pose. This can occur when all associated keyframes lie outside the corrected trajectory or within an interpolation gap longer than three times the median spacing.
 \end{reply}
 
 \point{R2-C3}{What does "supported source vertex" mean?}
 \begin{reply}
-It is a vertex with at least one retained observation that has a corrected pose ($\mathcal O_j\neq\emptyset$ and $\mathcal J_j\neq\emptyset$; Sections~III-B and III-C). Stage~2 turns these observations into its target $v_j^*$ (Eq.~(4)), so the vertex becomes a measured control. Sections III-B to III-D now call such a vertex ``observed''.
+A supported source vertex has at least one retained observation with a corrected pose ($\mathcal O_j\neq\emptyset$ and $\mathcal J_j\neq\emptyset$; Sections~III-B and III-C). Stage~2 aggregates these observations into target $v_j^*$ (Eq.~(4)), making the vertex a measured control. Sections III-B to III-D now call such a vertex ``observed''.
 \end{reply}
 
 \subsection*{Sec. III-D}
 
 \point{R2-D1}{What do "controls" mean?}
 \begin{reply}
-A control is a vertex whose position is prescribed in the ARAP solve. A measured control uses the target $v_j^*$ from Stage 2 (Section~III-D).
+A control is a vertex with a prescribed position in the ARAP solve. A measured control uses the Stage-2 target $v_j^*$ (Section~III-D).
 \end{reply}
 
 \point{R2-D2}{What do "connected components" mean? Are these connected components of the mesh? How are they tracked?}
 \begin{reply}
-These are connected components of the triangle mesh: vertices connected through mesh edges belong to the same component. Components are recomputed for the current source mesh at each correction, giving labels local to that event.
+Connected components are sets of mesh vertices joined by paths along triangle edges. We recompute them on the source mesh at each correction; their labels are local to that event.
 \end{reply}
 
 \point{R2-D3}{What does "component-restricted inverse-distance predictor" do? I.e. what significance does connectivity have in predicting inverse distance?}
 \begin{reply}
-It predicts displacement from neighbouring controls using inverse-squared-distance weights. Preferring neighbours on the same mesh component separates nearby surface copies caused by drift that may require different corrections (Section~III-D(a)).
+The predictor estimates displacement from neighbouring controls using inverse-squared-distance weights. Restricting neighbours to the same mesh component prevents nearby but disconnected surfaces, such as drift-induced duplicates, from sharing a displacement estimate (Section~III-D(a)).
 \end{reply}
 
 \point{R2-D4}{What is a "median - MAD residual test"? Residual between what? What is MAD?}
 \begin{reply}
-The test compares a measured control displacement $d_j$ with the neighbourhood prediction $\hat d_j$. Over all tested controls, define
+The test compares each measured-control displacement $d_j$ with its neighbourhood prediction $\hat d_j$. Across tested controls, define
 \[
 e_j=\|d_j-\hat d_j\|,\qquad
 \mu=\operatorname{median}_j e_j,\qquad
@@ -386,22 +386,22 @@ A control is rejected when
 \[
 e_j>\mu+1.5\max(1.4826\,\mathrm{MAD},0.05\,\mathrm{m}).
 \]
-Here MAD is the median absolute deviation; Section III-D(a), the parameter table, and Algorithm 1 specify the test, settings, and execution order.
+MAD denotes median absolute deviation. Section III-D(a), Table~I, and Algorithm~1 specify the test, parameters, and execution order.
 \end{reply}
 
 \point{R2-D5}{What does "statistically isolated control" mean? Do you mean outliers?}
 \begin{reply}
-Yes---outlier controls. The revision uses ``outlier'' and gives the test in Section III-D(a).
+The term refers to outlier controls. The revision uses ``outlier'' and defines the rejection test in Section III-D(a).
 \end{reply}
 
 \point{R2-D6}{What is the difference between "omitted components" (due to being "supported only by rejected controls") and "Retained components without a surviving measured control"? I.e., how can components be retained without surviving "controls" if they are omitted?}
 \begin{reply}
-The difference is the component size. Small components (fragments, fewer than $N_{\rm f}=100$ faces) are omitted when they have no control, either from the start or after step (a) rejects all their controls. Larger components without a control are kept and receive synthetic controls in step (b).
+The distinction is component size. We omit fragments with fewer than $N_{\rm f}=100$ faces if they have no surviving control, whether initially or after step (a) rejects their controls. Larger components without a surviving control remain in the mesh and receive synthetic controls in step (b).
 \end{reply}
 
 \point{R2-D7}{Constraints were not yet defined here, yet there are descriptions of "receiving robust motion constraints"}
 \begin{reply}
-The constraint is the control displacement $d_j=v_j^*-v_j^-$, a prescribed vertex displacement. The revision defines it at the end of Stage~2 (Section III-C), before Stage~3 introduces synthetic controls.
+A motion constraint prescribes the displacement $d_j=v_j^*-v_j^-$ of a control vertex. Section III-C now defines it at the end of Stage~2, before Stage~3 introduces synthetic controls.
 \end{reply}
 
 \point{R2-D8}{What does "QEM" stand for?}
@@ -411,22 +411,22 @@ Quadric error metric (Garland and Heckbert, 1997), expanded in Section~III-D.
 
 \point{R2-D9}{Eq. 7: is this the "control" or the corrected proxy vertex position?}
 \begin{reply}
-The submitted Eq.~(7) defines the initial proxy target: the proxy rest position plus the average displacement of its clustered controls (Section III-D(d)).
+Eq.~(7) of the submission defines an initial proxy target, not the corrected proxy position: the proxy rest position plus the mean displacement of its clustered controls (Section III-D(d)).
 \end{reply}
 
 \point{R2-D10}{What does "controlled proxy vertex" mean? How are vertices controlled/uncontrolled?}
 \begin{reply}
-A proxy vertex is controlled when it has an assigned target, from mapped controls ($\mathcal K_a\neq\emptyset$) or from the three anchors added to an otherwise unconstrained component. The remaining vertex positions are optimized in the ARAP solve (Section~III-D(d) -- (e)).
+A proxy vertex is controlled if it receives a target from mapped controls ($\mathcal K_a\neq\emptyset$) or from one of three anchors added to an otherwise unconstrained component. The ARAP solve optimizes the positions of all other vertices (Section~III-D(d) -- (e)).
 \end{reply}
 
 \point{R2-D11}{What does "only when it is a gross residual" mean? What does it mean for residuals to be a strict majority? What are the "synthetic targets"?}
 \begin{reply}
-A \emph{gross residual} satisfies $r_a=\|p_a^{(0)}-\hat p_a\|\ge4.685\sigma_a$, where $\hat p_a$ is the local rigid prediction and $\sigma_a$ the robust fitting scale. A \emph{strict majority} means more than half the fitted measured targets in that component are gross. \emph{Synthetic targets} are assigned to anchor components without measured controls. Section III-D(d), Eq.~(5), specifies their update rule.
+A \emph{gross residual} satisfies $r_a=\|p_a^{(0)}-\hat p_a\|\ge4.685\sigma_a$, where $\hat p_a$ is the local rigid prediction and $\sigma_a$ the robust fitting scale. A \emph{strict majority} requires more than half of the fitted measured targets in a component to have gross residuals. \emph{Synthetic targets} anchor components without measured controls. Section III-D(d), Eq.~(5), specifies their update rule.
 \end{reply}
 
 \point{R2-D12}{Eq. 8: p\_\{a\}\textasciicircum{}\{+\} and p\_b\textasciicircum{}\{+\} are not defined. Should these be p\_\{a\}\textasciicircum{}\{\textbackslash{}star\}? What is P\textasciicircum{}+? Why is it an optimization variable?}
 \begin{reply}
-No. $P^+=\{p_a^+\}$ are the deformed proxy positions that ARAP solves for, and $p_a^*$ are the targets that fix the controlled vertices. $P^+$ is a variable because the positions of the uncontrolled vertices are unknown. Section III-D(e) now defines both before Eq.~(6).
+$P^+=\{p_a^+\}$ denotes the deformed proxy positions optimized by ARAP; $p_a^*$ denotes prescribed targets for controlled vertices. The positions of uncontrolled vertices are optimization variables. Section III-D(e) now defines both before Eq.~(6).
 \end{reply}
 
 \point{R2-D13}{What does "proxy one-ring" mean?}
@@ -441,12 +441,12 @@ $c_{bc}=\sum_{f\supset(b,c)}\tfrac12\cot\vartheta^f_{bc}$, where $\vartheta^f_{b
 
 \point{R2-D15}{Is the proposed method using the "proxy" or the source mesh?}
 \begin{reply}
-We solve on the 60K QEM proxy and transfer its displacements to the source mesh. The submitted Section III-D specifies this standard configuration. Section IV-E compares it with full-mesh ARAP: F@25 stays within 0.032\,pp, and Stage~3 time drops from 3.323\,s to 1.408\,s.
+We solve on a QEM proxy capped at 60,000 vertices and transfer the resulting displacements to the source mesh. Section III-D specifies this configuration. Section IV-E compares proxy and full-mesh ARAP: F@25 differs by at most 0.032\,pp, while Stage~3 time falls from 3.323\,s to 1.408\,s.
 \end{reply}
 
 \point{R2-D16}{What does "topology-local" mean?}
 \begin{reply}
-It means that a source vertex takes its displacement only from its own connected surface. The interpolating triangle is chosen among those incident to the vertex's own proxy vertex $\pi(j)$ (Section~III-D(f)).
+A source vertex receives displacement only from its own connected surface. Interpolation uses a triangle incident to that source vertex's mapped proxy vertex $\pi(j)$ (Section~III-D(f)).
 \end{reply}
 
 \point{R2-D17}{What does "star(\textbackslash{}pi(j))" mean?}
@@ -456,18 +456,18 @@ $\operatorname{star}_P(\pi(j))$ is the set of proxy triangles incident to $\pi(j
 
 \point{R2-D18}{How are "edge-stretch, area-change or aspect-ratio bounds" defined mathematically?}
 \begin{reply}
-Section III-D(f) defines
+Section III-D(f) defines the deformation-quality measures
 \[
 \xi^{\rm e}=\max_e\frac{\ell_e^+}{\ell_e^-},\qquad
 \xi^{\rm A}=\frac{A^+}{A^-},\qquad
 \xi^{\rm asp}=\frac{(\ell^+_{\max})^2}{2A^+},
 \]
-where $\ell$ and $A$ are edge length and face area, and $-/+$ denote source/warped geometry. A face is flagged at $\xi^{\rm e}\ge3$, $\xi^{\rm A}\ge6$, or $\xi^{\rm asp}\ge20$ with $\ell^+_{\max}\ge0.5$\,m. These bounds are listed in the parameter table.
+where $\ell$ and $A$ are edge length and face area, and $-/+$ denote source/warped geometry. A face is flagged at $\xi^{\rm e}\ge3$, $\xi^{\rm A}\ge6$, or $\xi^{\rm asp}\ge20$ with $\ell^+_{\max}\ge0.5$\,m. Table~I lists these thresholds.
 \end{reply}
 
 \point{R2-D19}{What does "observed support" mean?}
 \begin{reply}
-Observed source support is $\Omega^-=\{x:w^-(x)>0\}$. It contains voxels carrying integration evidence, including both the surface neighbourhood and observed free space. Section III-A separates this volumetric set from observed mesh vertices, which are defined by retained keyframe correspondences in Section III-B.
+Observed source support is $\Omega^-=\{x:w^-(x)>0\}$. It includes voxels with integration evidence near the surface and in observed free space. This volumetric support differs from observed mesh vertices, which Section III-B defines using retained keyframe correspondences.
 \end{reply}
 
 \subsection*{Sec. III-E}
